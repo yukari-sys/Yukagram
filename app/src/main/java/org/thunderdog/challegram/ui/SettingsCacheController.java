@@ -22,6 +22,8 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
+import com.github.yukagram.ui.MainControllerV2;
+
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.Log;
@@ -948,7 +950,7 @@ public class SettingsCacheController extends RecyclerViewController<SettingsData
 
           @Override
           public void onEraseDataCompleted () {
-            MainController c = new MainController(context, tdlib);
+            MainControllerV2 c = new MainControllerV2(context, tdlib);
             onDataErased();
             c.getValue();
             navigationController().insertController(c, 0);
