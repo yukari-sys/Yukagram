@@ -21,8 +21,8 @@ Todo list:
 - [x] Hide phone numbers
 - [x] Hide camera button from input bar
 - [x] Redesign emoji keyboard
-- [ ] Redesign dialogs view (MainActivity)
-- [ ] "My profile" button
+- [ ] Redesign dialogs view (MainController)
+- [ ] "My profile" drawer button
 - [ ] Media/music player customizations
 - [ ] Apple emojis for reactions
 - [ ] Hiding premium stuff
