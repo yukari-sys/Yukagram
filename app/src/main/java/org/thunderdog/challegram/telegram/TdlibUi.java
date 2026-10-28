@@ -103,7 +103,7 @@ import org.thunderdog.challegram.ui.EditRightsController;
 import org.thunderdog.challegram.ui.EditUsernameController;
 import org.thunderdog.challegram.ui.InstantViewController;
 import org.thunderdog.challegram.ui.ListItem;
-import org.thunderdog.challegram.ui.MainController;
+import com.github.yukagram.ui.MainControllerV2;
 import org.thunderdog.challegram.ui.MapController;
 import org.thunderdog.challegram.ui.MapControllerFactory;
 import org.thunderdog.challegram.ui.MessagesController;
@@ -2099,7 +2099,7 @@ public class TdlibUi extends Handler {
       c.setPasscodeMode(PasscodeController.MODE_UNLOCK);
       if (navigation.isEmpty()) {
         navigation.initController(c);
-        MainController main = new MainController(context.context(), context.tdlib());
+        MainControllerV2 main = new MainControllerV2(context.context(), context.tdlib());
         main.getValue();
         navigation.getStack().insert(main, 0);
       } else {
@@ -2294,7 +2294,7 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(controller);
-      MainController c = new MainController(context.context(), context.tdlib());
+      MainControllerV2 c = new MainControllerV2(context.context(), context.tdlib());
       c.getValue();
       navigation.getStack().insert(c, 0);
     } else if (navigation.getStackSize() > 1 && (options & CHAT_OPTION_KEEP_STACK) == 0) {
@@ -2356,7 +2356,7 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(profileController);
-      MainController c = new MainController(context.context(), context.tdlib());
+      MainControllerV2 c = new MainControllerV2(context.context(), context.tdlib());
       c.getValue();
       navigation.getStack().insert(c, 0);
     } else {
