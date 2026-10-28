@@ -45,6 +45,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.yukagram.ui.MainControllerV2;
+
 import org.thunderdog.challegram.FillingDrawable;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.charts.LayoutHelper;
@@ -1726,8 +1728,8 @@ public class SettingHolder extends RecyclerView.ViewHolder {
           contentView.addView(usersView);
           if (themeProvider instanceof ChatsController) {
             usersView.setParent(((ChatsController) themeProvider).getParentController());
-          } else if (themeProvider instanceof MainController) {
-            usersView.setParent((MainController) themeProvider);
+          } else if (themeProvider instanceof MainControllerV2) {
+            usersView.setParent((MainControllerV2) themeProvider);
           }
         } else {
           if (viewType == ListItem.TYPE_WEBSITES_EMPTY) {
