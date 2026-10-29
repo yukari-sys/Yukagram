@@ -22,7 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
-import com.github.yukagram.ui.MainControllerV2;
+import com.github.yukagram.ui.MainControllerInterface;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
@@ -38,6 +38,7 @@ import org.thunderdog.challegram.mediaview.paint.PaintState;
 import org.thunderdog.challegram.navigation.DoubleHeaderView;
 import org.thunderdog.challegram.navigation.MoreDelegate;
 import org.thunderdog.challegram.navigation.SettingsWrapBuilder;
+import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.SessionSnapshot;
 import org.thunderdog.challegram.telegram.TGLegacyManager;
 import org.thunderdog.challegram.telegram.Tdlib;
@@ -950,10 +951,10 @@ public class SettingsCacheController extends RecyclerViewController<SettingsData
 
           @Override
           public void onEraseDataCompleted () {
-            MainControllerV2 c = new MainControllerV2(context, tdlib);
+            MainControllerInterface c = MainControllerInterface.create(context, tdlib);
             onDataErased();
             c.getValue();
-            navigationController().insertController(c, 0);
+            navigationController().insertController((ViewController<?>) c, 0);
           }
         });
       } else {
