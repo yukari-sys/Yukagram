@@ -43,7 +43,7 @@ import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.tool.Views;
 
-import com.github.yukagram.ui.MainControllerV2;
+import com.github.yukagram.ui.MainControllerInterface;
 import org.thunderdog.challegram.util.text.Counter;
 import org.thunderdog.challegram.v.CustomRecyclerView;
 import org.thunderdog.challegram.widget.CircleButton;
@@ -388,7 +388,7 @@ public class ChatFoldersFeatureController extends SinglePageBottomSheetViewContr
     }
 
     private Counter buildUnreadCounter (TdApi.ChatList chatList) {
-      MainControllerV2.UnreadCounterColorSet unreadCounterColorSet = new MainControllerV2.UnreadCounterColorSet(FALSE);
+      MainControllerInterface.UnreadCounterColorSet unreadCounterColorSet = MainControllerInterface.UnreadCounterColorSet.create(FALSE);
       Counter unreadCounter = new Counter.Builder()
         .textSize(12f)
         .backgroundPadding(4f)
@@ -397,7 +397,7 @@ public class ChatFoldersFeatureController extends SinglePageBottomSheetViewContr
         .build();
       unreadCounterColorSet.setCounter(unreadCounter);
       TdlibCounter counter = tdlib.getCounter(chatList);
-      MainControllerV2.updateCounter(tdlib, chatList, unreadCounter, counter, /* animated */ false);
+      MainControllerInterface.updateCounter(tdlib, chatList, unreadCounter, counter, /* animated */ false);
       return unreadCounter;
     }
 

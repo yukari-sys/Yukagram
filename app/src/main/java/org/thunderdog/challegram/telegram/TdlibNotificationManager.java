@@ -37,6 +37,8 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.github.yukagram.ui.MainControllerInterface;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.FileProvider;
 import org.thunderdog.challegram.Log;
@@ -54,7 +56,6 @@ import org.thunderdog.challegram.service.PushProcessor;
 import org.thunderdog.challegram.sync.SyncAdapter;
 import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.tool.UI;
-import com.github.yukagram.ui.MainControllerV2;
 import org.thunderdog.challegram.ui.MessagesController;
 import org.thunderdog.challegram.unsorted.AppContext;
 import org.thunderdog.challegram.unsorted.DeviceTokenRetrieverInstance;
@@ -2136,7 +2137,7 @@ public class TdlibNotificationManager implements UI.StateListener, Passcode.Lock
     try {
       c = UI.getCurrentStackItem();
     } catch (IndexOutOfBoundsException ignored) { }
-    if (((c instanceof MessagesController && ((MessagesController) c).compareChat(sentMessage.chatId)) || (c instanceof MainControllerV2)) && !c.isPaused()) {
+    if (((c instanceof MessagesController && ((MessagesController) c).compareChat(sentMessage.chatId)) || (c instanceof MainControllerInterface)) && !c.isPaused()) {
       //noinspection SwitchIntDef
       switch (sentMessage.content.getConstructor()) {
         case TdApi.MessageScreenshotTaken.CONSTRUCTOR:

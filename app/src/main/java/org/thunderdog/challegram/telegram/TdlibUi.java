@@ -103,7 +103,8 @@ import org.thunderdog.challegram.ui.EditRightsController;
 import org.thunderdog.challegram.ui.EditUsernameController;
 import org.thunderdog.challegram.ui.InstantViewController;
 import org.thunderdog.challegram.ui.ListItem;
-import com.github.yukagram.ui.MainControllerV2;
+
+import com.github.yukagram.ui.MainControllerInterface;
 import org.thunderdog.challegram.ui.MapController;
 import org.thunderdog.challegram.ui.MapControllerFactory;
 import org.thunderdog.challegram.ui.MessagesController;
@@ -2099,9 +2100,9 @@ public class TdlibUi extends Handler {
       c.setPasscodeMode(PasscodeController.MODE_UNLOCK);
       if (navigation.isEmpty()) {
         navigation.initController(c);
-        MainControllerV2 main = new MainControllerV2(context.context(), context.tdlib());
+        MainControllerInterface main = MainControllerInterface.create(context.context(), context.tdlib());
         main.getValue();
-        navigation.getStack().insert(main, 0);
+        navigation.getStack().insert((ViewController<?>) main, 0);
       } else {
         navigation.navigateTo(c);
       }
@@ -2294,9 +2295,9 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(controller);
-      MainControllerV2 c = new MainControllerV2(context.context(), context.tdlib());
+      MainControllerInterface c = MainControllerInterface.create(context.context(), context.tdlib());
       c.getValue();
-      navigation.getStack().insert(c, 0);
+      navigation.getStack().insert((ViewController<?>) c, 0);
     } else if (navigation.getStackSize() > 1 && (options & CHAT_OPTION_KEEP_STACK) == 0) {
       navigation.setControllerAnimated(controller, true, true);
     } else {
@@ -2356,9 +2357,9 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(profileController);
-      MainControllerV2 c = new MainControllerV2(context.context(), context.tdlib());
+      MainControllerInterface c = MainControllerInterface.create(context.context(), context.tdlib());
       c.getValue();
-      navigation.getStack().insert(c, 0);
+      navigation.getStack().insert((ViewController<?>) c, 0);
     } else {
       ViewController<?> c = navigation.getCurrentStackItem();
       if (c instanceof MessagesController && !tdlib.isSelfChat(chat) && ((MessagesController) c).getHeaderChatId() == chat.id && !((MessagesController) c).inPreviewMode()) {
