@@ -1548,7 +1548,7 @@ public class MainController extends ViewPagerController<Void> implements MainCon
   }
 
   private ChatsController newChatsController (TdApi.ChatList chatList, @Filter int filter) {
-    ChatsController chats = new ChatsController(this.context, tdlib); //.setParent(this);
+    ChatsController chats = new ChatsController(this.context, tdlib).setParent(this);
     ChatFilter chatFilter;
     switch (filter) {
       case FILTER_NONE:

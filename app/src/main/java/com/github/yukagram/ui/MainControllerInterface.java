@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 
+import com.github.yukagram.YuSettings;
+
 import org.drinkless.tdlib.TdApi;
-import org.thunderdog.challegram.navigation.BackHeaderButton;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.telegram.TdlibCounter;
-import org.thunderdog.challegram.ui.ChatsController;
 import org.thunderdog.challegram.ui.MainController;
 import org.thunderdog.challegram.util.text.Counter;
 import org.thunderdog.challegram.util.text.TextColorSet;
@@ -22,7 +22,7 @@ public interface MainControllerInterface {
     enum MainControllerVersion { V1, V2 }
 
     static MainControllerVersion getCurrentVersion() {
-        return MainControllerVersion.V2; // TODO: grab it from settings
+        return YuSettings.Toggle.NewDialogsView.is() ? MainControllerVersion.V2 : MainControllerVersion.V1;
     }
 
     static MainControllerInterface create(Context context, Tdlib tdlib) {
