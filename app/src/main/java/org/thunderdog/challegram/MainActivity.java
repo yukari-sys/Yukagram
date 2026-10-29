@@ -72,7 +72,8 @@ import org.thunderdog.challegram.ui.EditChatFolderInviteLinkController;
 import org.thunderdog.challegram.ui.EditNameController;
 import org.thunderdog.challegram.ui.IntroController;
 import org.thunderdog.challegram.ui.ListItem;
-import com.github.yukagram.ui.MainControllerV2;
+
+import com.github.yukagram.ui.MainControllerInterface;
 import org.thunderdog.challegram.ui.MessagesController;
 import org.thunderdog.challegram.ui.PasscodeController;
 import org.thunderdog.challegram.ui.PasswordController;
@@ -241,9 +242,9 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
     }
     NavigationStack stack = navigation.getStack();
     stack.destroyAllButSaveLast(2);
-    MainControllerV2 chats = new MainControllerV2(c.context(), c.tdlib());
+    MainControllerInterface chats = MainControllerInterface.create(c.context(), c.tdlib());
     chats.getValue();
-    stack.replace(0, chats);
+    stack.replace(0, (ViewController<?>) chats);
   }
 
   private CancellableRunnable lastAccountSwitchTask;
@@ -340,11 +341,11 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
       @Override
       public void act () {
         if (!navigation.isDestroyed()) {
-          MainControllerV2 c = new MainControllerV2(MainActivity.this, tdlib);
+          MainControllerInterface c = MainControllerInterface.create(MainActivity.this, tdlib);
           if (navigation.isEmpty()) {
-            navigation.setController(c);
+            navigation.setController((ViewController<?>) c);
           } else {
-            navigation.setControllerAnimated(c, false, false);
+            navigation.setControllerAnimated((ViewController<?>) c, false, false);
           }
         }
       }
@@ -371,7 +372,7 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
       boolean needThemeSwitch = this.account.id != account.id && isUnauthorizedController(current) && !isUnauthorizedController(first) && first.tdlibId() != account.id && current.tdlibId() == account.id;
 
       if (isUnauthorizedController(first) || !first.isSameAccount(account)) {
-        ViewController<?> c = new MainControllerV2(this, account.tdlib());
+        ViewController<?> c = (ViewController<?>) MainControllerInterface.create(this, account.tdlib());
         if (needThemeSwitch) {
           account.tdlib().settings().replaceGlobalTheme(this.account.tdlib().settings());
         }
@@ -669,37 +670,38 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
   }
 
   private void initMainController (@Nullable Tdlib intentTdlib, @Nullable String intentAction, @Nullable Intent intent) {
-    MainControllerV2 c = new MainControllerV2(this, account.tdlib());
+    MainControllerInterface c = MainControllerInterface.create(this, account.tdlib());
     if (intent != null) {
       c.shareIntent(intentTdlib, intentAction, intent);
     }
     initWith(c);
   }
 
-  private void initWith (MainControllerV2 c) {
-    if (true) {
-      navigation.initController(c);
-      return;
-    }
-    c.getValue();
-    ViewController<?> child = c.getPreparedControllerForPosition(0);
-    if (child != null && child.needAsynchronousAnimation()) {
-      setBlankViewVisible(true, false);
-      child.postOnAnimationExecute(() -> {
-        if (navigation.isEmpty()) {
-          navigation.initController(c);
-        }
-        setBlankViewVisible(false, false);
-      });
-    } else {
-      navigation.initController(c);
-    }
+  private void initWith (MainControllerInterface c) {
+    navigation.initController((ViewController<?>) c);
+//    if (true) {
+//    navigation.initController(c);
+//      return;
+//    }
+//    c.getValue();
+//    ViewController<?> child = c.getPreparedControllerForPosition(0);
+//    if (child != null && child.needAsynchronousAnimation()) {
+//      setBlankViewVisible(true, false);
+//      child.postOnAnimationExecute(() -> {
+//        if (navigation.isEmpty()) {
+//          navigation.initController(c);
+//        }
+//        setBlankViewVisible(false, false);
+//      });
+//    } else {
+//      navigation.initController(c);
+//    }
   }
 
   private void insertMainController () {
-    MainControllerV2 c = new MainControllerV2(this, account.tdlib());
+    MainControllerInterface c = MainControllerInterface.create(this, account.tdlib());
     c.getValue();
-    navigation.insertController(c, 0);
+    navigation.insertController((ViewController<?>) c, 0);
   }
 
   @Override
@@ -1087,8 +1089,8 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
       initMainController(account.tdlib(), action, intent);
     } else {
       ViewController<?> c = navigation.getStack().get(0);
-      if (c instanceof MainControllerV2) {
-        ((MainControllerV2) c).shareIntent(account.tdlib(), action, intent);
+      if (c instanceof MainControllerInterface) {
+        ((MainControllerInterface) c).shareIntent(account.tdlib(), action, intent);
       }
     }
   }
@@ -1370,7 +1372,7 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
       ViewController<?> first = navigation.getStack().get(0);
       ViewController<?> replaced = null;
       if (first.getId() != R.id.controller_main || first.tdlibId() != accountId) {
-        replaced = new MainControllerV2(this, TdlibManager.getTdlib(accountId));
+        replaced = (ViewController<?>) MainControllerInterface.create(this, TdlibManager.getTdlib(accountId));
       }
       if (stackSize > 1) {
         if (replaced != null) {
@@ -1459,11 +1461,11 @@ public class MainActivity extends BaseActivity implements GlobalAccountListener,
 
     TdlibAccount account = TdlibManager.instance().account(accountId);
 
-    MainControllerV2 c = new MainControllerV2(this, account.tdlib());
+    MainControllerInterface c = MainControllerInterface.create(this, account.tdlib());
     if (allowAsync) {
       initWith(c);
     } else {
-      navigation.initController(c);
+      navigation.initController((ViewController<?>) c);
     }
   }
 

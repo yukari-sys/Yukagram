@@ -11,6 +11,7 @@ import org.thunderdog.challegram.BuildConfig;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.core.Lang;
+import org.thunderdog.challegram.navigation.BackHeaderButton;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.telegram.TdlibCounter;
@@ -28,34 +29,10 @@ import me.vkryl.android.widget.FrameLayoutFix;
 import me.vkryl.core.lambda.FutureBool;
 import tgx.td.ChatPosition;
 
-public class MainControllerV2 extends ViewController<Void> {
+public class MainControllerV2 extends ViewController<Void> implements MainControllerInterface {
 
   public MainControllerV2(Context context, Tdlib tdlib) {
     super(context, tdlib);
-  }
-
-  public static void updateCounter(Tdlib tdlib, TdApi.ChatList chatList, Counter unreadCounter, TdlibCounter counter, boolean b) {
-
-  }
-
-    public void showComposeWrap(ChatsController chatsController) {
-
-    }
-
-  public static class UnreadCounterColorSet implements TextColorSet {
-
-    public UnreadCounterColorSet(FutureBool aFalse) {
-
-    }
-
-    @Override
-    public int defaultTextColor() {
-      return 0;
-    }
-
-    public void setCounter(Counter unreadCounter) {
-
-    }
   }
 
   @Override
@@ -103,9 +80,46 @@ public class MainControllerV2 extends ViewController<Void> {
   }
 
   public void shareIntent(Tdlib intentTdlib, String intentAction, Intent intent) {
+
   }
 
   public ViewController<?> getPreparedControllerForPosition(int i) {
     return chatsController;
+  }
+
+  @Override
+  public boolean showComposeWrap(ViewController<?> chatsController) {
+    return false;
+  }
+
+
+  @Override
+  protected int getBackButton () {
+    return BackHeaderButton.TYPE_MENU;
+  }
+
+  @Override
+  protected boolean useDrawer () {
+    return true;
+  }
+
+  public static void updateCounter(Tdlib tdlib, TdApi.ChatList chatList, Counter unreadCounter, TdlibCounter counter, boolean b) {
+
+  }
+
+  public static class UnreadCounterColorSet implements MainControllerInterface.UnreadCounterColorSet {
+
+    public UnreadCounterColorSet(FutureBool aFalse) {
+
+    }
+
+    @Override
+    public int defaultTextColor() {
+      return 0;
+    }
+
+    public void setCounter(Counter unreadCounter) {
+
+    }
   }
 }
