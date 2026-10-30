@@ -550,7 +550,7 @@ public abstract class BaseActivity extends FragmentActivity implements View.OnTo
       setDarkness(darkness);
     }*/
 
-    if (!YuSettings.getInstance().isConnectionStatusBarHidden()) {
+    if (!YuSettings.Toggle.HideConnectionStatusBar.is()) {
       statusBar = new NetworkStatusBarView(this);
       statusBar.addThemeListeners(themeList);
       rootView.addView(statusBar);

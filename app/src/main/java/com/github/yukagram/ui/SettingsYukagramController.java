@@ -38,25 +38,25 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
         int itemId = item.getId();
 
         if (itemId == R.id.btn_hideConnectionStatusBar) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isConnectionStatusBarHidden(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideConnectionStatusBar.is(), isUpdate);
         } else if (itemId == R.id.btn_hideCameraButton) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHideCameraButton(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideCameraButton.is(), isUpdate);
         } else if (itemId == R.id.btn_moveArchiveToSidebar) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isMoveArchiveToSidebar(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.MoveArchiveToSidebar.is(), isUpdate);
         } else if (itemId == R.id.btn_moveCallsToSidebar) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isMoveCallsToSidebar(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.MoveCallsToSidebar.is(), isUpdate);
         } else if (itemId == R.id.btn_hidePhoneNumbers) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHidePhoneNumbers(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HidePhoneNumbers.is(), isUpdate);
         } else if (itemId == R.id.btn_hideSidebarButtonInviteFriends) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHideSidebarButtonInviteFriends(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideSidebarButtonInviteFriends.is(), isUpdate);
         } else if (itemId == R.id.btn_hideSidebarButtonNightMode) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHideSidebarButtonNightMode(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideSidebarButtonNightMode.is(), isUpdate);
         } else if (itemId == R.id.btn_hideSidebarButtonHelp) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHideSidebarButtonHelp(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideSidebarButtonHelp.is(), isUpdate);
         } else if (itemId == R.id.btn_newEmojiKeyboard) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isNewEmojiKeyboard(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.NewEmojiKeyboard.is(), isUpdate);
         } else if (itemId == R.id.btn_hideTrending) {
-          view.getToggler().setRadioEnabled(YuSettings.getInstance().isHideTrending(), isUpdate);
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.HideTrending.is(), isUpdate);
         }
       }
     };
@@ -106,31 +106,31 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
     boolean needToRestart = false;
 
     if (viewId == R.id.btn_hideConnectionStatusBar) {
-      YuSettings.getInstance().setConnectionStatusBarHidden(adapter.toggleView(v));
+      YuSettings.Toggle.HideConnectionStatusBar.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_hideCameraButton) {
-      YuSettings.getInstance().setHideCameraButton(adapter.toggleView(v));
+      YuSettings.Toggle.HideCameraButton.set(adapter.toggleView(v));
     } else if (viewId == R.id.btn_moveArchiveToSidebar) {
-      YuSettings.getInstance().setMoveArchiveToSidebar(adapter.toggleView(v));
+      YuSettings.Toggle.MoveArchiveToSidebar.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_moveCallsToSidebar) {
-      YuSettings.getInstance().setMoveCallsToSidebar(adapter.toggleView(v));
+      YuSettings.Toggle.MoveCallsToSidebar.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_hidePhoneNumbers) {
-      YuSettings.getInstance().setHidePhoneNumbers(adapter.toggleView(v));
+      YuSettings.Toggle.HidePhoneNumbers.set(adapter.toggleView(v));
     } else if (viewId == R.id.btn_hideSidebarButtonInviteFriends) {
-      YuSettings.getInstance().setHideSidebarButtonInviteFriends(adapter.toggleView(v));
+      YuSettings.Toggle.HideSidebarButtonInviteFriends.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_hideSidebarButtonNightMode) {
-      YuSettings.getInstance().setHideSidebarButtonNightMode(adapter.toggleView(v));
+      YuSettings.Toggle.HideSidebarButtonNightMode.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_hideSidebarButtonHelp) {
-      YuSettings.getInstance().setHideSidebarButtonHelp(adapter.toggleView(v));
+      YuSettings.Toggle.HideSidebarButtonHelp.set(adapter.toggleView(v));
       needToRestart = true;
     } else if (viewId == R.id.btn_newEmojiKeyboard) {
-      YuSettings.getInstance().setNewEmojiKeyboard(adapter.toggleView(v));
+      YuSettings.Toggle.NewEmojiKeyboard.set(adapter.toggleView(v));
     } else if (viewId == R.id.btn_hideTrending) {
-      YuSettings.getInstance().setHideTrending(adapter.toggleView(v));
+      YuSettings.Toggle.HideTrending.set(adapter.toggleView(v));
     }
 
     if (needToRestart) {

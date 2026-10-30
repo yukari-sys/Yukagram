@@ -71,7 +71,6 @@ import org.thunderdog.challegram.ui.CallListController;
 import org.thunderdog.challegram.ui.ChatsController;
 import org.thunderdog.challegram.ui.FeatureToggles;
 import org.thunderdog.challegram.ui.ListItem;
-import org.thunderdog.challegram.ui.MainController;
 import org.thunderdog.challegram.ui.PeopleController;
 import org.thunderdog.challegram.ui.SettingsAdapter;
 import org.thunderdog.challegram.ui.SettingsController;
@@ -286,16 +285,16 @@ public class DrawerController extends ViewController<Void> implements View.OnCli
     }
 
     items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_contacts, R.drawable.baseline_perm_contact_calendar_24, R.string.Contacts));
-    if (Settings.instance().chatFoldersEnabled() || YuSettings.getInstance().isMoveCallsToSidebar()) {
+    if (Settings.instance().chatFoldersEnabled() || YuSettings.Toggle.MoveCallsToSidebar.is()) {
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_calls, R.drawable.baseline_call_24, R.string.Calls));
     }
     items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_savedMessages, R.drawable.baseline_bookmark_24, R.string.SavedMessages));
-    if (YuSettings.getInstance().isMoveArchiveToSidebar()) {
+    if (YuSettings.Toggle.MoveArchiveToSidebar.is()) {
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_archive, R.drawable.baseline_archive_24, R.string.ArchiveTitleList));
     }
     this.settingsClickBait = getSettingsClickBait();
     items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_settings, R.drawable.baseline_settings_24, R.string.Settings));
-    if (!YuSettings.getInstance().isHideSidebarButtonInviteFriends())
+    if (!YuSettings.Toggle.HideSidebarButtonInviteFriends.is())
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_invite, R.drawable.baseline_person_add_24, R.string.InviteFriends));
 
     this.proxyAvailable = Settings.instance().getAvailableProxyCount() > 0;
@@ -303,10 +302,10 @@ public class DrawerController extends ViewController<Void> implements View.OnCli
       proxyItem.setSelected(Settings.instance().getEffectiveProxyId() != Settings.PROXY_ID_NONE);
       items.add(proxyItem);
     }
-    if (!YuSettings.getInstance().isHideSidebarButtonHelp())
+    if (!YuSettings.Toggle.HideSidebarButtonHelp.is())
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_help, R.drawable.baseline_help_24, R.string.Help));
 
-    if (!YuSettings.getInstance().isHideSidebarButtonNightMode()) {
+    if (!YuSettings.Toggle.HideSidebarButtonNightMode.is()) {
       items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM_WITH_RADIO, R.id.btn_night, R.drawable.baseline_brightness_2_24, R.string.NightMode, R.id.btn_night, Theme.isDark()));
     }

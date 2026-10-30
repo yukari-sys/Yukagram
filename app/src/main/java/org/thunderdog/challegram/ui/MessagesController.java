@@ -11839,7 +11839,7 @@ public class MessagesController extends ViewController<MessagesController.Argume
   }
 
   public boolean isCameraButtonVisibleOnAttachPanel () {
-    return !YuSettings.getInstance().isHideCameraButton() && !canSelectSender();
+    return !YuSettings.Toggle.HideCameraButton.is() && !canSelectSender();
   }
 
   public HapticMenuHelper.MenuItem createHapticSenderItem (int id, TdApi.MessageSender sender, boolean useUsername, boolean isLocked) {

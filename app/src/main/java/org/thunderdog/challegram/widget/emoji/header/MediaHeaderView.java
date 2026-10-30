@@ -241,10 +241,10 @@ public class MediaHeaderView extends RecyclerView {
       this.onClickListener = onClickListener;
       this.themeProvider = themeProvider;
       this.headerItems = new ArrayList<>();
-      if (!hideSectionsExceptRecent && !YuSettings.getInstance().isNewEmojiKeyboard()) {
+      if (!hideSectionsExceptRecent && !YuSettings.Toggle.NewEmojiKeyboard.is()) {
         this.headerItems.add(new EmojiSection(parent, -1, R.drawable.baseline_emoticon_outline_24, 0).setActiveDisabled());
         this.headerItems.add(new EmojiSection(parent, -2, R.drawable.deproko_baseline_gif_24, R.drawable.deproko_baseline_gif_filled_24));
-        if (!YuSettings.getInstance().isHideTrending())
+        if (!YuSettings.Toggle.HideTrending.is())
           this.headerItems.add(new EmojiSection(parent, -3, R.drawable.outline_whatshot_24, R.drawable.baseline_whatshot_24).setMakeFirstTransparent());
       }
       // this.favoriteSection = new EmojiSection(parent, -4, R.drawable.baseline_star_border_24, R.drawable.baseline_star_24).setMakeFirstTransparent();
@@ -252,7 +252,7 @@ public class MediaHeaderView extends RecyclerView {
       this.trendingSection = new EmojiSection(parent, -5, R.drawable.outline_whatshot_24, R.drawable.baseline_whatshot_24).setMakeFirstTransparent();
       this.trendingSection.setIsTrending();
 
-      if (!YuSettings.getInstance().isNewEmojiKeyboard()) {
+      if (!YuSettings.Toggle.NewEmojiKeyboard.is()) {
         this.selectedObject = selectedIsGifs ? headerItems.get(1) : recentSection;
         if (selectedIsGifs) {
           this.headerItems.get(1).setFactor(1f, false);
@@ -334,7 +334,7 @@ public class MediaHeaderView extends RecyclerView {
     private boolean showingTrendingSection;
 
     private void checkTrending () {
-      if (YuSettings.getInstance().isHideTrending()) {
+      if (YuSettings.Toggle.HideTrending.is()) {
         showingTrendingSection = true;
         return;
       }

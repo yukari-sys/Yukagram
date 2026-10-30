@@ -108,7 +108,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsViewHolder> {
   private boolean needArchive, hasArchive;
 
   public void setNeedArchive (boolean needArchive) {
-    needArchive = !YuSettings.getInstance().isMoveArchiveToSidebar() && needArchive;
+    needArchive = !YuSettings.Toggle.MoveArchiveToSidebar.is() && needArchive;
     if (this.needArchive != needArchive) {
       this.needArchive = needArchive;
       checkArchive();

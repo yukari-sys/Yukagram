@@ -1502,7 +1502,7 @@ public class MainController extends ViewPagerController<Void> implements Menu, M
 
   @Override
   protected int getPagerItemCount () {
-    return hasFolders() ? pagerChatLists.size() : (YuSettings.getInstance().isMoveCallsToSidebar() ? 1 : 2);
+    return hasFolders() ? pagerChatLists.size() : (YuSettings.Toggle.MoveCallsToSidebar.is() ? 1 : 2);
   }
 
   protected long getPagerItemId (int position) {
@@ -1778,7 +1778,7 @@ public class MainController extends ViewPagerController<Void> implements Menu, M
     } else if (hasFolders()) {
       TdApi.ChatList chatList = pagerChatLists.get(position);
       c = newChatsController(chatList, getSelectedFilter(pagerItemId));
-    } else if (position == POSITION_CALLS && !YuSettings.getInstance().isMoveCallsToSidebar()) {
+    } else if (position == POSITION_CALLS && !YuSettings.Toggle.MoveCallsToSidebar.is()) {
       c = new CallListController(this.context, tdlib);
     } else if (position == POSITION_PEOPLE) {
       c = new PeopleController(this.context, tdlib);
@@ -1804,7 +1804,7 @@ public class MainController extends ViewPagerController<Void> implements Menu, M
     if (hasFolders()) {
       throw new UnsupportedOperationException();
     }
-    return YuSettings.getInstance().isMoveCallsToSidebar() ?
+    return YuSettings.Toggle.MoveCallsToSidebar.is() ?
       new CharSequence[]{
         getMenuSectionName(MAIN_PAGER_ITEM_ID, /* pagerItemPosition */ 0, /* hasFolders */ false, ChatFolderStyle.LABEL_ONLY, /* upperCase */ true),
       } : new CharSequence[] {
@@ -1865,7 +1865,7 @@ public class MainController extends ViewPagerController<Void> implements Menu, M
 
   private List<ViewPagerTopView.Item> getDefaultSectionItems () {
     if (defaultSectionItems == null) {
-      defaultSectionItems = YuSettings.getInstance().isMoveCallsToSidebar() ?
+      defaultSectionItems = YuSettings.Toggle.MoveCallsToSidebar.is() ?
         Arrays.asList(getDefaultMainItem()) :
         Arrays.asList(
           getDefaultMainItem(),

@@ -110,7 +110,7 @@ public class EmojiHeaderView extends FrameLayout implements FactorAnimator.Targe
       themeProvider.addThemeInvalidateListener(this);
     }
 
-    if (!YuSettings.getInstance().isNewEmojiKeyboard())
+    if (!YuSettings.Toggle.NewEmojiKeyboard.is())
       addView(goToMediaPageSection, FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.RIGHT));
 
     emojiHeaderViewNonPremium = new EmojiHeaderViewNonPremium(context);
@@ -154,7 +154,7 @@ public class EmojiHeaderView extends FrameLayout implements FactorAnimator.Targe
 
   public void setSelectedObjectByPosition (int i, boolean animated) {
     emojiHeaderViewNonPremium.setSelectedIndex(i - 1, animated);
-    setSelectedObject(adapter.getObject(i - (YuSettings.getInstance().isHideTrending() ? 1 : 0)), animated);
+    setSelectedObject(adapter.getObject(i - (YuSettings.Toggle.HideTrending.is() ? 1 : 0)), animated);
   }
 
   private static int getOffset() {

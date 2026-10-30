@@ -287,7 +287,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
 
     int currentSection = Settings.instance().getEmojiMediaSection();
 
-    if (YuSettings.getInstance().isNewEmojiKeyboard())
+    if (YuSettings.Toggle.NewEmojiKeyboard.is())
       currentSection = isGif ? SECTION_GIFS : SECTION_STICKERS;
 
     switch (currentSection) {
@@ -456,7 +456,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
         @Override
         public void getItemOffsets (@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
           int position = parent.getChildAdapterPosition(view);
-          if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+          if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
             outRect.top = manager.isFirstRow(position) ? Screen.dp(4f) : 0;
           } else {
             outRect.top = manager.isFirstRow(position) ? Screen.dp(4f) + EmojiLayout.getHeaderSize() : 0;
@@ -470,7 +470,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   }
 
   public float getDesiredHeaderHideFactor () {
-    if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
       return contentView.getCurrentSection() == SECTION_GIFS ? 1f : 0f;
     } else {
       return contentView.getCurrentSection() == SECTION_GIFS ? Math.clamp((float) getGIFsScrollY() / (float) EmojiLayout.getHeaderSize(), 0f, 1f) : 0f;
@@ -1520,7 +1520,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
     this.loadingGIFs = false;
     this.gifs = gifs;
     gifsAdapter.setGIFs(gifs);
-    if (YuSettings.getInstance().isNewEmojiKeyboard())  {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is())  {
       getArguments().setHasGifs(!gifs.isEmpty());
     } else if (gifs.isEmpty() && contentView.getCurrentSection() == SECTION_GIFS) {
       showStickers();

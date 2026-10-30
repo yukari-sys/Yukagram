@@ -13,58 +13,48 @@ import org.drinkmore.Tracer;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class YuSettings {
+public class YuSettings implements LevelDB.ErrorHandler {
 
     public static final int VERSION = 1;
 
-    // Keys
-
     public static final String KEY_VERSION = "version";
-    public static final String KEY_HIDE_CONNECTION_STATUS_BAR = "hide_connection_status_bar";
-    public static final String KEY_HIDE_CAMERA_BUTTON = "hide_camera_button";
-    public static final String KEY_MOVE_ARCHIVE_TO_SIDEBAR = "move_archive_to_sidebar";
-    public static final String KEY_MOVE_CALLS_TO_SIDEBAR = "move_calls_to_sidebar";
-    public static final String KEY_HIDE_PHONE_NUMBERS = "hide_phone_numbers";
-    public static final String KEY_HIDE_SIDEBAR_BUTTON_INVITE_FRIENDS = "hide_sidebar_button_invite_friends";
-    public static final String KEY_HIDE_SIDEBAR_BUTTON_NIGHT_MODE = "hide_sidebar_button_night_mode";
-    public static final String KEY_HIDE_SIDEBAR_BUTTON_HELP = "hide_sidebar_button_help";
-    public static final String KEY_NEW_EMOJI_KEYBOARD = "new_emoji_keyboard";
-    public static final String KEY_HIDE_TRENDING = "hide_trending";
 
-    // Defaults
+    public enum Toggle {
+        HideConnectionStatusBar("hide_connection_status_bar", true),
+        HideCameraButton("hide_camera_button", true),
+        MoveArchiveToSidebar("move_archive_to_sidebar", true),
+        MoveCallsToSidebar("move_calls_to_sidebar", true),
+        HidePhoneNumbers("hide_phone_numbers", true),
+        HideSidebarButtonInviteFriends("hide_sidebar_button_invite_friends", true),
+        HideSidebarButtonNightMode("hide_sidebar_button_night_mode", true),
+        HideSidebarButtonHelp("hide_sidebar_button_help", true),
+        NewEmojiKeyboard("new_emoji_keyboard", true),
+        HideTrending("hide_trending", true);
 
-    public static final boolean DEFAULT_HIDE_CONNECTION_STATUS_BAR = true;
-    public static final boolean DEFAULT_HIDE_CAMERA_BUTTON = true;
-    public static final boolean DEFAULT_MOVE_ARCHIVE_TO_SIDEBAR = true;
-    public static final boolean DEFAULT_MOVE_CALLS_TO_SIDEBAR = true;
-    public static final boolean DEFAULT_HIDE_PHONE_NUMBERS = true;
-    public static final boolean DEFAULT_HIDE_SIDEBAR_BUTTON_INVITE_FRIENDS = true;
-    public static final boolean DEFAULT_HIDE_SIDEBAR_BUTTON_NIGHT_MODE = true;
-    public static final boolean DEFAULT_HIDE_SIDEBAR_BUTTON_HELP = true;
-    public static final boolean DEFAULT_NEW_EMOJI_KEYBOARD = true;
-    public static final boolean DEFAULT_HIDE_TRENDING = true;
+        private final String key;
+        private final boolean defValue;
+
+        Toggle(String key, boolean defValue) {
+            this.key = key;
+            this.defValue = defValue;
+        }
+
+        public boolean is() {
+            return YuSettings.instance().leveldb.getBoolean(key, defValue);
+        }
+
+        public void set(boolean value) {
+            YuSettings.instance().leveldb.putBoolean(key, value);
+        }
+    }
 
     private static YuSettings instance;
 
-    public static YuSettings getInstance() {
+    public static YuSettings instance() {
         return instance;
     }
 
-    private LevelDB leveldb;
-
-    private class YuLeveldbErrorHandler implements LevelDB.ErrorHandler {
-        @Override
-        public boolean onFatalError (LevelDB levelDB, Throwable error) {
-            Tracer.onDatabaseError(error);
-            return true;
-        }
-
-        @Override
-        public void onError (LevelDB levelDB, String message, @Nullable Throwable error) {
-            // Cannot use custom Log, since settings are not yet loaded
-            android.util.Log.e(Log.LOG_TAG, message, error);
-        }
-    }
+    private final LevelDB leveldb;
 
     public YuSettings() {
         instance = this;
@@ -85,14 +75,13 @@ public class YuSettings {
         }
 
         long ms = SystemClock.uptimeMillis();
-        leveldb = new LevelDB(new File(pmcDir, "db").getPath(), true, new YuLeveldbErrorHandler());
+        leveldb = new LevelDB(new File(pmcDir, "db").getPath(), true, this);
 
         int pmcVersion;
         if (didNotExist) {
             pmcVersion = VERSION;
             leveldb.putInt(KEY_VERSION, VERSION);
         } else {
-            pmcVersion = 0;
             try {
                 pmcVersion = Math.max(0, leveldb.tryGetInt(KEY_VERSION));
             } catch (FileNotFoundException e) {
@@ -124,85 +113,18 @@ public class YuSettings {
         Log.i("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⡿⢠⠟⠒⠋⠉⠉⠉⠉⠻⠿⢿⣿⠀⠀⠀⠿⣿⣿⠁⠀⠀⠛⠿⢟⣿⠇⠀⠀⠻⠿⠿⣛⣿⠁⠀⠀⠀⠀⠀");
         Log.i("⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡿⣋⣤⣴⣶⣶⣶⣶⣦⣄⡀⢀⣴⣿⣿⣷⣄⣠⣾⡿⠿⣿⣶⣤⣀⣴⣿⢿⣶⣦⣄⣀⣴⣾⡿⠋⠀⠀⠀⠀⠀⠀");
         Log.i("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠻⠿⠛⠉⠉⠀⠀⠉⠙⠻⠿⠿⠟⠁⠈⠛⠛⠛⠋⠀⠀⠀⠉⠛⠛⠛⠁⠀⠉⠙⠛⠛⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀");
+
+        Log.i("Yusettings version: %d", pmcVersion);
     }
 
-    public boolean isConnectionStatusBarHidden() {
-        return leveldb.getBoolean(KEY_HIDE_CONNECTION_STATUS_BAR, DEFAULT_HIDE_CONNECTION_STATUS_BAR);
+    @Override
+    public boolean onFatalError (LevelDB levelDB, Throwable error) {
+        Tracer.onDatabaseError(error);
+        return true;
     }
 
-    public void setConnectionStatusBarHidden(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_CONNECTION_STATUS_BAR, value);
-    }
-
-    public boolean isHideCameraButton() {
-        return leveldb.getBoolean(KEY_HIDE_CAMERA_BUTTON, DEFAULT_HIDE_CAMERA_BUTTON);
-    }
-
-    public void setHideCameraButton(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_CAMERA_BUTTON, value);
-    }
-
-    public boolean isMoveArchiveToSidebar() {
-        return leveldb.getBoolean(KEY_MOVE_ARCHIVE_TO_SIDEBAR, DEFAULT_MOVE_ARCHIVE_TO_SIDEBAR);
-    }
-
-    public void setMoveArchiveToSidebar(boolean value) {
-        leveldb.putBoolean(KEY_MOVE_ARCHIVE_TO_SIDEBAR, value);
-    }
-
-    public boolean isMoveCallsToSidebar() {
-        return leveldb.getBoolean(KEY_MOVE_CALLS_TO_SIDEBAR, DEFAULT_MOVE_CALLS_TO_SIDEBAR);
-    }
-
-    public void setMoveCallsToSidebar(boolean value) {
-        leveldb.putBoolean(KEY_MOVE_CALLS_TO_SIDEBAR, value);
-    }
-
-    public boolean isHidePhoneNumbers() {
-        return leveldb.getBoolean(KEY_HIDE_PHONE_NUMBERS, DEFAULT_HIDE_PHONE_NUMBERS);
-    }
-
-    public void setHidePhoneNumbers(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_PHONE_NUMBERS, value);
-    }
-
-    public boolean isHideSidebarButtonInviteFriends() {
-        return leveldb.getBoolean(KEY_HIDE_SIDEBAR_BUTTON_INVITE_FRIENDS, DEFAULT_HIDE_SIDEBAR_BUTTON_INVITE_FRIENDS);
-    }
-
-    public void setHideSidebarButtonInviteFriends(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_SIDEBAR_BUTTON_INVITE_FRIENDS, value);
-    }
-
-    public boolean isHideSidebarButtonNightMode() {
-        return leveldb.getBoolean(KEY_HIDE_SIDEBAR_BUTTON_NIGHT_MODE, DEFAULT_HIDE_SIDEBAR_BUTTON_NIGHT_MODE);
-    }
-
-    public void setHideSidebarButtonNightMode(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_SIDEBAR_BUTTON_NIGHT_MODE, value);
-    }
-
-    public boolean isHideSidebarButtonHelp() {
-        return leveldb.getBoolean(KEY_HIDE_SIDEBAR_BUTTON_HELP, DEFAULT_HIDE_SIDEBAR_BUTTON_HELP);
-    }
-
-    public void setHideSidebarButtonHelp(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_SIDEBAR_BUTTON_HELP, value);
-    }
-
-    public boolean isNewEmojiKeyboard() {
-        return leveldb.getBoolean(KEY_NEW_EMOJI_KEYBOARD, DEFAULT_NEW_EMOJI_KEYBOARD);
-    }
-
-    public void setNewEmojiKeyboard(boolean value) {
-        leveldb.putBoolean(KEY_NEW_EMOJI_KEYBOARD, value);
-    }
-
-    public boolean isHideTrending() {
-        return leveldb.getBoolean(KEY_HIDE_TRENDING, DEFAULT_HIDE_TRENDING);
-    }
-
-    public void setHideTrending(boolean value) {
-        leveldb.putBoolean(KEY_HIDE_TRENDING, value);
+    @Override
+    public void onError (LevelDB levelDB, String message, @Nullable Throwable error) {
+        Log.e(Log.LOG_TAG, message, error);
     }
 }

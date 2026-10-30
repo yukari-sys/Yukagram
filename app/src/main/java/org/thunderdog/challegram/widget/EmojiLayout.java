@@ -19,7 +19,6 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.annotation.DrawableRes;
@@ -308,7 +307,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       bottomBarView.setHasGifs(value);
     }
     updatePositions();
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && adapter != null) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && adapter != null) {
       adapter.updateGifSection();
     }
   }
@@ -328,7 +327,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     this.useDarkMode = useDarkMode;
     this.hasGifs = false;
 
-    emojiSectionsSize = 7 + (allowMedia ? (YuSettings.getInstance().isNewEmojiKeyboard() ? 2 : 1) : 0);
+    emojiSectionsSize = 7 + (allowMedia ? (YuSettings.Toggle.NewEmojiKeyboard.is() ? 2 : 1) : 0);
 
     adapter = new Adapter(context, this, allowMedia, themeProvider);
     pager = new RtlViewPager(getContext());
@@ -356,7 +355,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     if (!animatedEmojiOnly) {
       ArrayList<EmojiSection> emojiSections = new ArrayList<>(2);
-      if (!YuSettings.getInstance().isHideTrending())
+      if (!YuSettings.Toggle.HideTrending.is())
         emojiSections.add(new EmojiSection(this, EmojiSection.SECTION_EMOJI_TRENDING, R.drawable.outline_whatshot_24, R.drawable.baseline_whatshot_24).setMakeFirstTransparent());
       emojiSections.add(new EmojiSection(this, EmojiSection.SECTION_EMOJI_RECENT, R.drawable.baseline_access_time_24, R.drawable.baseline_watch_later_24)/*.setFactor(1f, false)*/.setMakeFirstTransparent().setOffsetHalf(false));
 
@@ -379,7 +378,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     // Media sections
 
     if (allowMedia || animatedEmojiOnly) {
-      if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+      if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
         gifSectionsView = new MediaHeaderView(getContext());
         gifSectionsView.init(this, themeProvider, this, true);
         headerView.addView(gifSectionsView);
@@ -416,7 +415,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       position = 0;
     }
 
-    if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
       if (position == getGifsPosition()) {
         headerView.setTranslationY(-getHeaderSize());
         shadowView.setTranslationY(-getHeaderSize());
@@ -449,7 +448,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     addView(shadowView);
     addView(circleButton);
 
-    if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
       bottomBarView = new EmojiBottomBarView(getContext());
       bottomBarView.init(themeProvider, hasGifs ? position : new int[]{0,2,2}[position], allowMedia, hasGifs);
       bottomBarView.setOnClickListener(this);
@@ -804,7 +803,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       if (listener != null && newSection != -1) {
         listener.onSectionSwitched(this, newSection, prevSection);
       }
-    } else if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+    } else if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
       if (viewId == R.id.btn_tabEmojis) {
         pager.setCurrentItem(0, true);
       } else if (viewId == R.id.btn_tabGifs) {
@@ -831,7 +830,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setHeaderHideFactor (float factor, float offset) {
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && getCurrentItem() == getGifsPosition() && factor == 0) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition() && factor == 0) {
       factor = 1;
     }
 
@@ -956,7 +955,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     }
 
     float hideFactor = Math.min(1f, Math.max(0f, (float) y / (float) getHeaderSize()));
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && getCurrentItem() == getGifsPosition()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition()) {
       hideFactor = 1;
     }
 
@@ -979,7 +978,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     }
 
     float hideFactor = Math.max(0f, Math.min(1f, (float) (y - lastHeaderVisibleY) / (float) getHeaderSize()));
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && getCurrentItem() == getGifsPosition()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition()) {
       hideFactor = 1;
     }
 
@@ -1066,7 +1065,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     @Override
     public int getCount () {
-      return allowMedia ? ((YuSettings.getInstance().isNewEmojiKeyboard() ? (3 + (parent.hasGifs ? 0 : -1)) : 2)) : 1;
+      return allowMedia ? ((YuSettings.Toggle.NewEmojiKeyboard.is() ? (3 + (parent.hasGifs ? 0 : -1)) : 2)) : 1;
     }
 
     @Override
@@ -1192,7 +1191,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     float factor = (float) position + positionOffset;
     setCurrentPageFactor(factor);
 
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && hasGifs) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && hasGifs) {
       setHeaderHideFactor(factor > 1 ? (2 - factor) : factor, false);
       return;
     }
@@ -1220,7 +1219,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     }
     resetScrollState(false);
 
-    if (YuSettings.getInstance().isNewEmojiKeyboard() && bottomBarView != null) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is() && bottomBarView != null) {
       bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2}[position]);
     }
   }
@@ -1299,11 +1298,11 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public int getGifsPosition() {
-    return YuSettings.getInstance().isNewEmojiKeyboard() ? (hasGifs ? 1 : -1) : 1;
+    return YuSettings.Toggle.NewEmojiKeyboard.is() ? (hasGifs ? 1 : -1) : 1;
   }
 
   public int getStickersPosition() {
-    return YuSettings.getInstance().isNewEmojiKeyboard() ? (hasGifs ? 2 : 1) : 1;
+    return YuSettings.Toggle.NewEmojiKeyboard.is() ? (hasGifs ? 2 : 1) : 1;
   }
 
   // Icon

@@ -3743,7 +3743,7 @@ public class Settings {
   }
 
   public int getEmojiMediaSection () {
-    if (YuSettings.getInstance().isNewEmojiKeyboard()) {
+    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
       return new int[]{
         EmojiMediaType.STICKER,
         EmojiMediaType.GIF,
@@ -6264,7 +6264,7 @@ public class Settings {
   }
 
   public boolean needHidePhoneNumber () {
-    return YuSettings.getInstance().isHidePhoneNumbers() || checkUtilityFeature(UTILITY_FEATURE_HIDE_NUMBER);
+    return YuSettings.Toggle.HidePhoneNumbers.is() || checkUtilityFeature(UTILITY_FEATURE_HIDE_NUMBER);
   }
 
   public void setHidePhoneNumber (boolean enabled) {

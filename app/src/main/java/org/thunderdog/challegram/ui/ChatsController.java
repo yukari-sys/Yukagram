@@ -2487,7 +2487,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
       items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
       items.add(new ListItem(ListItem.TYPE_BUTTON, R.id.btn_editFolder, 0, R.string.EditFolder));
       items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
-    } else if (archiveList != null && archiveList.totalCount() > 0 && !YuSettings.getInstance().isMoveArchiveToSidebar()) {
+    } else if (archiveList != null && archiveList.totalCount() > 0 && !YuSettings.Toggle.MoveArchiveToSidebar.is()) {
       items.add(new ListItem(ListItem.TYPE_ICONIZED_EMPTY, R.id.changePhoneText, R.drawable.baseline_archive_96, Lang.getMarkdownString(this, R.string.OpenArchiveHint), false));
       items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
       items.add(new ListItem(ListItem.TYPE_BUTTON, R.id.btn_archive, 0, R.string.OpenArchive));
