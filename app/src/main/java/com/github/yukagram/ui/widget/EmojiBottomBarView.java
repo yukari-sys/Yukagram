@@ -18,6 +18,7 @@ import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.support.ViewSupport;
 import org.thunderdog.challegram.theme.ColorId;
+import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Fonts;
 import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.Views;
@@ -79,24 +80,27 @@ public class EmojiBottomBarView extends FrameLayoutFix {
       buttons.add(title);
     }
 
-    ViewSupport.setThemedBackground(linearLayout, ColorId.background, themeProvider).setCornerRadius(16.5f); // borderRadius + padding = ask chatgpt
+    float linearLayoutCornerRadius = 15 + 5; // innerRadius + padding = outerRadius
+
+    ViewSupport.setThemedBackground(linearLayout, ColorId.background, themeProvider)
+            .setCornerRadius(linearLayoutCornerRadius);
 //    themeProvider.addThemeBackgroundColorListener(linearLayout, ColorId.headerBackground);
 
-    linearLayout.setPadding(Screen.dp(3f), Screen.dp(3f), Screen.dp(3f), Screen.dp(3f));
+    linearLayout.setPadding(Screen.dp(5f), Screen.dp(5f), Screen.dp(5f), Screen.dp(5f));
 
     FrameLayoutFix.LayoutParams layoutParams = FrameLayoutFix.newParams(
       ViewGroup.LayoutParams.WRAP_CONTENT,
       ViewGroup.LayoutParams.WRAP_CONTENT,
       Gravity.CENTER_HORIZONTAL | Gravity.FILL_VERTICAL
     );
-    layoutParams.setMargins(0, 0, 0, Screen.dp(15));
+    layoutParams.setMargins(0, 0, 0, Screen.dp(5));
 
     linearLayout.setOutlineProvider(new ViewOutlineProvider() {
       @Override
       public void getOutline(View view, Outline outline) {
         outline.setRoundRect(
-          0,0,view.getWidth(),view.getHeight(),
-          Screen.dp(16.5f)
+          0, 0, view.getWidth(), view.getHeight(),
+          Screen.dp(linearLayoutCornerRadius)
         );
       }
     });
@@ -119,8 +123,13 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     setVisibility(value ? View.VISIBLE : View.GONE);
   }
 
+  boolean hasGifs = true;
+
   public void setHasGifs(boolean value) {
+    if (hasGifs == value) return;
     buttons.get(1).setVisibility(value ? View.VISIBLE : View.GONE);
+    hasGifs = value;
+
   }
 
   public void setSelectedIndex (int index) {
@@ -157,14 +166,15 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     private FillingDrawable background;
 
     public void init(ViewController<?> themeProvider, boolean selected) {
-      setTypeface(Fonts.getRobotoRegular());
+      setTypeface(Fonts.getRobotoMedium());
       setSingleLine();
       setGravity(Gravity.LEFT);
       setEllipsize(TextUtils.TruncateAt.END);
       setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
-      setPadding(Screen.dp(12), Screen.dp(4), Screen.dp(12), Screen.dp(4));
+      setPadding(Screen.dp(10), Screen.dp(3), Screen.dp(10), Screen.dp(3));
 
-      themeProvider.addThemeTextColorListener(this, ColorId.circleButtonOverlayIcon);
+      setTextColor(Theme.getColor(ColorId.circleButtonOverlayIcon));
+      themeProvider.addOrUpdateThemeTextColorListener(this, ColorId.circleButtonOverlayIcon);
 
       background = ViewSupport.setThemedBackground(this, ColorId.circleButtonOverlay, themeProvider);
       background.setCornerRadius(15f);

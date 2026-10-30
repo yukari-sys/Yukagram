@@ -305,6 +305,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     if (bottomBarView != null) {
       bottomBarView.setHasGifs(value);
+      int position = pager.getCurrentItem();
+      bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2,2}[position]);
     }
     updatePositions();
     if (YuSettings.Toggle.NewEmojiKeyboard.is() && adapter != null) {
@@ -1220,7 +1222,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     resetScrollState(false);
 
     if (YuSettings.Toggle.NewEmojiKeyboard.is() && bottomBarView != null) {
-      bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2}[position]);
+      bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2,2}[position]);
     }
   }
 
