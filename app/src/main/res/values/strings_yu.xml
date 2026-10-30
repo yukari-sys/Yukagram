@@ -4,7 +4,7 @@
   <string name="yu_YukagramSettingsDescription">holy crap</string>
   <string name="yu_HideConnectionStatusBar">Hide connection status bar</string>
   <string name="yu_HideCameraButton">Hide camera button</string>
-  <string name="yu_HideCameraButtonDescription">Moves camera button from into attachments menu</string>
+  <string name="yu_HideCameraButtonDescription">Moves camera button from input bar into attachments menu</string>
   <string name="yu_RestartIsNeeded">You need to restart the app to see the changes.</string>
   <string name="yu_NothingHereYet">Nothing to see here yet :#</string>
   <string name="yu_MoveArchiveToSidebar">Move archive button to drawer</string>
