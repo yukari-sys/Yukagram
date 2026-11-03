@@ -1,4 +1,4 @@
-package com.github.yukagram.ui;
+package com.github.yukagram.ui.main_controller;
 
 import android.content.Context;
 import android.content.Intent;

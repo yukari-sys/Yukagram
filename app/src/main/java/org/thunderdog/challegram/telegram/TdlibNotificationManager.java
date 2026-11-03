@@ -37,7 +37,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.FileProvider;
