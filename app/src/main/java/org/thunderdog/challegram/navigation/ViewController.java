@@ -710,7 +710,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     }
   }
 
-  protected final void openSearchMode () {
+  protected void openSearchMode() {
     if (headerView != null) {
       headerView.openSearchMode();
     }
@@ -1445,7 +1445,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
 
   protected void onAfterLeaveSearchMode () { }
 
-  protected final void leaveSearchMode () {
+  protected void leaveSearchMode() {
     setFlags(flags & (~FLAG_IN_SEARCH_MODE));
     onAfterLeaveSearchMode();
     setSearchTransformFactor(0f, false);
