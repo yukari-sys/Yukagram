@@ -15,4 +15,5 @@
   <item type="id" name="btn_tabEmojis" />
   <item type="id" name="btn_tabStickers" />
   <item type="id" name="btn_tabGifs" />
+  <item type="id" name="btn_newDialogsView" />
 </resources>

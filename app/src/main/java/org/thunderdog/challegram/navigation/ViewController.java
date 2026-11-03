@@ -632,7 +632,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     }
   }
 
-  protected void onEnterSelectMode () {
+  public void onEnterSelectMode() {
 
   }
 
@@ -710,7 +710,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     }
   }
 
-  protected final void openSearchMode () {
+  protected void openSearchMode() {
     if (headerView != null) {
       headerView.openSearchMode();
     }
@@ -914,7 +914,8 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     return true;
   }
 
-  protected @IdRes int getSelectMenuId () {
+  @IdRes
+  public int getSelectMenuId() {
     return 0;
   }
 
@@ -1445,7 +1446,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
 
   protected void onAfterLeaveSearchMode () { }
 
-  protected final void leaveSearchMode () {
+  protected void leaveSearchMode() {
     setFlags(flags & (~FLAG_IN_SEARCH_MODE));
     onAfterLeaveSearchMode();
     setSearchTransformFactor(0f, false);

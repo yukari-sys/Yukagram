@@ -57,6 +57,8 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
           view.getToggler().setRadioEnabled(YuSettings.Toggle.NewEmojiKeyboard.is(), isUpdate);
         } else if (itemId == R.id.btn_hideTrending) {
           view.getToggler().setRadioEnabled(YuSettings.Toggle.HideTrending.is(), isUpdate);
+        } else if (itemId == R.id.btn_newDialogsView) {
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.NewDialogsView.is(), isUpdate);
         }
       }
     };
@@ -96,6 +98,11 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_hidePhoneNumbers, 0, R.string.yu_HidePhoneNumbers));
     items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
 
+    items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.yu_DialogsList));
+    items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
+    items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_newDialogsView, 0, R.string.yu_NewDialogsView));
+    items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
+
     recyclerView.setAdapter(adapter);
   }
 
@@ -131,6 +138,9 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
       YuSettings.Toggle.NewEmojiKeyboard.set(adapter.toggleView(v));
     } else if (viewId == R.id.btn_hideTrending) {
       YuSettings.Toggle.HideTrending.set(adapter.toggleView(v));
+    } else if (viewId == R.id.btn_newDialogsView) {
+      YuSettings.Toggle.NewDialogsView.set(adapter.toggleView(v));
+      needToRestart = true;
     }
 
     if (needToRestart) {

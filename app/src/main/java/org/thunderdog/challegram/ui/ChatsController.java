@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
@@ -182,14 +183,14 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
     super(context, tdlib);
   }
 
-  private MainController parentController;
+  private AbstractMainController<?> parentController;
 
-  public ChatsController setParent (MainController c) {
+  public ChatsController setParent (AbstractMainController<?> c) {
     this.parentController = c;
     return this;
   }
 
-  public MainController getParentController () {
+  public AbstractMainController<?> getParentController () {
     return parentController;
   }
 
@@ -1272,7 +1273,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
   }
 
   @Override
-  protected int getSelectMenuId () {
+  public int getSelectMenuId() {
     return R.id.menu_chatBulkActions;
   }
 

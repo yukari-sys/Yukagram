@@ -23,4 +23,6 @@
   <string name="yu_TabEmojis">Emoji</string>
   <string name="yu_TabStickers">Stickers</string>
   <string name="yu_TabGifs">GIFs</string>
+  <string name="yu_DialogsList">Dialogs list</string>
+  <string name="yu_NewDialogsView">New dialogs view (Experimental)</string>
 </resources>
