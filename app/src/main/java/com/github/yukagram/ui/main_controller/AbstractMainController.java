@@ -2,7 +2,8 @@ package com.github.yukagram.ui.main_controller;
 
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import com.github.yukagram.YuSettings;
 
@@ -16,36 +17,40 @@ import org.thunderdog.challegram.util.text.TextColorSet;
 
 import me.vkryl.core.lambda.FutureBool;
 
-public interface MainControllerInterface {
+public abstract class AbstractMainController<T> extends ViewController<T> {
+
+    public AbstractMainController(@NonNull Context context, Tdlib tdlib) {
+        super(context, tdlib);
+    }
 
     // hell nah
-    enum MainControllerVersion { V1, V2 }
+    public enum MainControllerVersion { V1, V2 }
 
-    static MainControllerVersion getCurrentVersion() {
+    public static MainControllerVersion getCurrentVersion() {
         return YuSettings.Toggle.NewDialogsView.is() ? MainControllerVersion.V2 : MainControllerVersion.V1;
     }
 
-    static MainControllerInterface create(Context context, Tdlib tdlib) {
+    public static AbstractMainController<?> create(Context context, Tdlib tdlib) {
         return switch (getCurrentVersion()) {
             case V1 -> new MainController(context, tdlib);
             case V2 -> new MainControllerV2(context, tdlib);
         };
     }
 
-    static void updateCounter(Tdlib tdlib, TdApi.ChatList chatList, Counter unreadCounter, TdlibCounter counter, boolean b) {
+    public static void updateCounter(Tdlib tdlib, TdApi.ChatList chatList, Counter unreadCounter, TdlibCounter counter, boolean b) {
         switch (getCurrentVersion()) {
             case V1 -> MainController.updateCounter(tdlib, chatList, unreadCounter, counter, b);
             case V2 -> MainControllerV2.updateCounter(tdlib, chatList, unreadCounter, counter, b);
         }
     }
 
-    void shareIntent(Tdlib intentTdlib, String intentAction, Intent intent);
+    public abstract void shareIntent(Tdlib intentTdlib, String intentAction, Intent intent);
 
-    ViewController<?> getPreparedControllerForPosition(int i);
+    public abstract ViewController<?> getPreparedControllerForPosition(int i);
 
-    boolean showComposeWrap(ViewController<?> chatsController);
+    public abstract boolean showComposeWrap(ViewController<?> chatsController);
 
-    interface UnreadCounterColorSet extends TextColorSet {
+    public interface UnreadCounterColorSet extends TextColorSet {
 
         static UnreadCounterColorSet create(FutureBool aFalse) {
             return switch (getCurrentVersion()) {
@@ -56,10 +61,4 @@ public interface MainControllerInterface {
 
         void setCounter(Counter unreadCounter);
     }
-
-
-    /* view controller shit here */
-    boolean isFocused();
-    boolean navigateTo(ViewController<?> c);
-    View getValue();
 }

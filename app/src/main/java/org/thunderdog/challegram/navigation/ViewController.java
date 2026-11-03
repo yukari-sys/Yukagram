@@ -632,7 +632,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     }
   }
 
-  protected void onEnterSelectMode () {
+  public void onEnterSelectMode() {
 
   }
 
@@ -914,7 +914,8 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     return true;
   }
 
-  protected @IdRes int getSelectMenuId () {
+  @IdRes
+  public int getSelectMenuId() {
     return 0;
   }
 
