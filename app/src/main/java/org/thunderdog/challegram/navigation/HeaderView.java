@@ -1707,7 +1707,7 @@ public class HeaderView extends FrameLayoutFix implements View.OnClickListener, 
 
   protected static final int TRANSFORM_MODE_NONE = 0;
   protected static final int TRANSFORM_MODE_SELECT = 1;
-  protected static final int TRANSFORM_MODE_SEARCH = 2;
+  public static final int TRANSFORM_MODE_SEARCH = 2;
   protected static final int TRANSFORM_MODE_CUSTOM = 3;
 
   private boolean isAnimating;

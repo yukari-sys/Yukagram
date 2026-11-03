@@ -22,7 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
-import com.github.yukagram.ui.main_controller.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
@@ -951,10 +951,10 @@ public class SettingsCacheController extends RecyclerViewController<SettingsData
 
           @Override
           public void onEraseDataCompleted () {
-            MainControllerInterface c = MainControllerInterface.create(context, tdlib);
+            AbstractMainController<?> c = AbstractMainController.create(context, tdlib);
             onDataErased();
             c.getValue();
-            navigationController().insertController((ViewController<?>) c, 0);
+            navigationController().insertController(c, 0);
           }
         });
       } else {

@@ -356,7 +356,7 @@ public abstract class ViewPagerController<T> extends TelegramViewController<T> i
   }
 
   @Override
-  protected void onEnterSelectMode () {
+  public void onEnterSelectMode() {
     super.onEnterSelectMode();
     getViewPager().setPagingEnabled(false);
     getCurrentPagerItem().onEnterSelectMode();
@@ -370,7 +370,7 @@ public abstract class ViewPagerController<T> extends TelegramViewController<T> i
   }
 
   @Override
-  protected int getSelectMenuId () {
+  public int getSelectMenuId() {
     ViewController<?> c = getCurrentPagerItem();
     return c != null ? c.getSelectMenuId() : super.getSelectMenuId();
   }

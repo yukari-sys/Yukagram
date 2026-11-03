@@ -22,7 +22,7 @@ import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
 
-import com.github.yukagram.ui.main_controller.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BaseActivity;
@@ -613,7 +613,7 @@ public class BaseView extends SparseDrawableView implements ClickHelper.Delegate
         IntList ids = new IntList(5);
         IntList icons = new IntList(5);
         StringList strings = new StringList(5);
-        listener = ancestor.tdlib().ui().createSimpleChatActions(ancestor, getPreviewChatList(), getPreviewChatId(), ((MessagesController) controller).getMessageThread(), new TdApi.MessageSourceOther(), ids, icons, strings, ancestor instanceof MainControllerInterface || ancestor instanceof ChatsController, false, false, null);
+        listener = ancestor.tdlib().ui().createSimpleChatActions(ancestor, getPreviewChatList(), getPreviewChatId(), ((MessagesController) controller).getMessageThread(), new TdApi.MessageSourceOther(), ids, icons, strings, ancestor instanceof AbstractMainController || ancestor instanceof ChatsController, false, false, null);
         for (int i = 0; i < ids.size(); i++) {
           actions.add(new ActionItem(ids.get(i), icons.get(i), strings.get()[i]));
         }
