@@ -42,7 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;

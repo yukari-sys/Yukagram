@@ -63,7 +63,7 @@ import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BaseActivity;
@@ -129,7 +129,6 @@ import org.thunderdog.challegram.util.FeatureAvailability;
 import org.thunderdog.challegram.util.StringList;
 import org.thunderdog.challegram.util.text.Counter;
 import org.thunderdog.challegram.util.text.IconSpan;
-import org.thunderdog.challegram.util.text.TextColorSet;
 import org.thunderdog.challegram.widget.BubbleLayout;
 import org.thunderdog.challegram.widget.FillingSpace;
 import org.thunderdog.challegram.widget.PopupLayout;
