@@ -73,7 +73,7 @@ import org.thunderdog.challegram.ui.EditNameController;
 import org.thunderdog.challegram.ui.IntroController;
 import org.thunderdog.challegram.ui.ListItem;
 
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 import org.thunderdog.challegram.ui.MessagesController;
 import org.thunderdog.challegram.ui.PasscodeController;
 import org.thunderdog.challegram.ui.PasswordController;

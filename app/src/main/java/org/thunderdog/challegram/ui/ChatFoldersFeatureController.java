@@ -43,7 +43,7 @@ import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.tool.Views;
 
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 import org.thunderdog.challegram.util.text.Counter;
 import org.thunderdog.challegram.v.CustomRecyclerView;
 import org.thunderdog.challegram.widget.CircleButton;

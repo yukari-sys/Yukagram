@@ -104,7 +104,7 @@ import org.thunderdog.challegram.ui.EditUsernameController;
 import org.thunderdog.challegram.ui.InstantViewController;
 import org.thunderdog.challegram.ui.ListItem;
 
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 import org.thunderdog.challegram.ui.MapController;
 import org.thunderdog.challegram.ui.MapControllerFactory;
 import org.thunderdog.challegram.ui.MessagesController;

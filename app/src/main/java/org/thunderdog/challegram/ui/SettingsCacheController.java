@@ -22,7 +22,7 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
-import com.github.yukagram.ui.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.MainControllerInterface;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
