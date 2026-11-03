@@ -28,7 +28,6 @@ import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.UI;
-import org.thunderdog.challegram.ui.ChatsController;
 import org.thunderdog.challegram.unsorted.Size;
 import org.thunderdog.challegram.unsorted.Test;
 import org.thunderdog.challegram.util.text.Counter;
@@ -37,9 +36,8 @@ import java.util.Stack;
 
 import me.vkryl.android.widget.FrameLayoutFix;
 import me.vkryl.core.lambda.FutureBool;
-import tgx.td.ChatPosition;
 
-public class MainControllerV2 extends ViewController<Void> implements MainControllerInterface, Menu {
+public class MainControllerV2 extends AbstractMainController<Void> implements Menu {
 
   public MainControllerV2(Context context, Tdlib tdlib) {
     super(context, tdlib);
@@ -79,25 +77,7 @@ public class MainControllerV2 extends ViewController<Void> implements MainContro
     flipper = new ViewFlipper(context);
     flipper.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-    Animation fadeIn = new Animation() {
-      private float pivotX;
-      private float pivotY;
-
-      @Override
-      protected void applyTransformation(float interpolatedTime, Transformation t) {
-        float scale = 0.75f + interpolatedTime * 0.25f;
-        t.setAlpha(interpolatedTime);
-        t.getMatrix().setScale(scale, scale, pivotX, pivotY);
-      }
-
-      @Override
-      public void initialize(int width, int height, int parentWidth, int parentHeight) {
-        super.initialize(width, height, parentWidth, parentHeight);
-
-        pivotX = resolveSize(Animation.RELATIVE_TO_PARENT, 0.5f, width, parentWidth);
-        pivotY = resolveSize(Animation.RELATIVE_TO_PARENT, 0.5f, height, parentHeight);
-      }
-    };
+    Animation fadeIn = new AlphaAnimation(0, 1);
     fadeIn.setDuration(150);
     fadeIn.setInterpolator(new DecelerateInterpolator());
 
@@ -255,7 +235,7 @@ public class MainControllerV2 extends ViewController<Void> implements MainContro
 
   }
 
-  public static class UnreadCounterColorSet implements MainControllerInterface.UnreadCounterColorSet {
+  public static class UnreadCounterColorSet implements AbstractMainController.UnreadCounterColorSet {
 
     public UnreadCounterColorSet(FutureBool aFalse) {
 

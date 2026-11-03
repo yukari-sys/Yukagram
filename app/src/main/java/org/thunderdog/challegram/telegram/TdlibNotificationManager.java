@@ -37,7 +37,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
-import com.github.yukagram.ui.main_controller.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.FileProvider;
@@ -2137,7 +2137,7 @@ public class TdlibNotificationManager implements UI.StateListener, Passcode.Lock
     try {
       c = UI.getCurrentStackItem();
     } catch (IndexOutOfBoundsException ignored) { }
-    if (((c instanceof MessagesController && ((MessagesController) c).compareChat(sentMessage.chatId)) || (c instanceof MainControllerInterface)) && !c.isPaused()) {
+    if (((c instanceof MessagesController && ((MessagesController) c).compareChat(sentMessage.chatId)) || (c instanceof AbstractMainController)) && !c.isPaused()) {
       //noinspection SwitchIntDef
       switch (sentMessage.content.getConstructor()) {
         case TdApi.MessageScreenshotTaken.CONSTRUCTOR:

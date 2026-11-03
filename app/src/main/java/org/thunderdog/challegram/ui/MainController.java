@@ -63,7 +63,8 @@ import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
-import com.github.yukagram.ui.main_controller.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
+import com.github.yukagram.ui.main_controller.legacy.MainViewPagerController;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BaseActivity;
@@ -165,7 +166,7 @@ import tgx.td.ChatPosition;
 import tgx.td.Td;
 import tgx.td.TdConstants;
 
-public class MainController extends ViewPagerController<Void> implements MainControllerInterface,
+public class MainController extends MainViewPagerController<Void> implements
         Menu, MoreDelegate, OverlayButtonWrap.Callback, TdlibOptionListener, AppUpdater.Listener, 
         ChatFoldersListener, GlobalCountersListener, Settings.ChatFolderSettingsListener {
   private static final long MAIN_PAGER_ITEM_ID = Long.MIN_VALUE;
@@ -3078,7 +3079,7 @@ public class MainController extends ViewPagerController<Void> implements MainCon
     }
   }
 
-  public static class UnreadCounterColorSet implements MainControllerInterface.UnreadCounterColorSet {
+  public static class UnreadCounterColorSet implements AbstractMainController.UnreadCounterColorSet {
     private @Nullable Counter counter;
     private final FutureBool displayTabsAtBottom;
 

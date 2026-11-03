@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.navigation.ViewController;
@@ -17,7 +18,7 @@ import org.thunderdog.challegram.widget.rtl.RtlViewPager;
 import me.vkryl.android.widget.FrameLayoutFix;
 import tgx.td.ChatPosition;
 
-public class DialogsController extends ViewController<MainControllerV2> implements androidx.viewpager.widget.ViewPager.OnPageChangeListener {
+public class DialogsController extends ViewController<MainControllerV2> implements OnPageChangeListener {
 
     private FrameLayoutFix container;
     private ViewPager pager;

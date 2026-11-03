@@ -38,7 +38,7 @@ import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.Strings;
 
-import com.github.yukagram.ui.main_controller.MainControllerInterface;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import java.util.Arrays;
 
@@ -494,9 +494,9 @@ public class JoinedUsersView extends View implements Destroyable, FactorAnimator
 
   // MainController access
 
-  private MainControllerInterface parent;
+  private AbstractMainController<?> parent;
 
-  public void setParent (MainControllerInterface c) {
+  public void setParent (AbstractMainController<?> c) {
     this.parent = c;
   }
 
