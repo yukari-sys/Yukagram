@@ -50,12 +50,31 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         return 0;
     }
 
+    private ChatsController chatsController;
+
+    /**
+     * The single {@link ChatsController} hosted by the pager, or null when it isn't created (yet).
+     * {@link MainControllerV2} needs it to route select mode & bulk action menu calls to the chats list.
+     */
+    public ChatsController getChatsController() {
+        return chatsController;
+    }
+
     public ChatsController newChatsController(int position) {
         ChatsController c = new ChatsController(this.context, tdlib).setParent(getArguments());
         c.setArguments(new ChatsController.Arguments(ChatPosition.CHAT_LIST_MAIN).setTag(null).setIsBase(true));
-        c.setParentWrapper(this);
+        // Parent wrapper must be the root controller: HeaderView operates on it, and ChatsController
+        // resolves headerView/navigationController through getParentOrSelf().
+        c.setParentWrapper(getArguments());
         c.bindThemeListeners(this);
+        this.chatsController = c;
         return c;
+    }
+
+    private void onChatsControllerDestroyed(Object object) {
+        if (object == chatsController) {
+            chatsController = null;
+        }
     }
 
     @Override
@@ -107,6 +126,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
             if (object instanceof ViewController<?>) {
                 container.removeViewAt(position);
             }
+            parent.onChatsControllerDestroyed(object);
         }
     }
 }

@@ -12,6 +12,8 @@ import android.view.animation.Transformation;
 import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
+import androidx.annotation.Nullable;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BuildConfig;
 import org.thunderdog.challegram.R;
@@ -21,6 +23,8 @@ import org.thunderdog.challegram.core.Lang;
 import org.thunderdog.challegram.navigation.BackHeaderButton;
 import org.thunderdog.challegram.navigation.HeaderView;
 import org.thunderdog.challegram.navigation.Menu;
+import org.thunderdog.challegram.navigation.MoreDelegate;
+import org.thunderdog.challegram.navigation.SelectDelegate;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.telegram.TdlibCounter;
@@ -30,6 +34,7 @@ import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.unsorted.Size;
 import org.thunderdog.challegram.unsorted.Test;
+import org.thunderdog.challegram.ui.ChatsController;
 import org.thunderdog.challegram.util.text.Counter;
 
 import java.util.Stack;
@@ -37,7 +42,7 @@ import java.util.Stack;
 import me.vkryl.android.widget.FrameLayoutFix;
 import me.vkryl.core.lambda.FutureBool;
 
-public class MainControllerV2 extends AbstractMainController<Void> implements Menu {
+public class MainControllerV2 extends AbstractMainController<Void> implements Menu, SelectDelegate, MoreDelegate {
 
   public MainControllerV2(Context context, Tdlib tdlib) {
     super(context, tdlib);
@@ -149,6 +154,26 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
     return controllers.get(index);
   }
 
+  /**
+   * The controller that currently owns the visible content: {@link DialogsController} is just a pager
+   * wrapper around a {@link ChatsController}, so unwrap it to reach the controller that actually
+   * implements the select mode / bulk actions menu.
+   */
+  @Nullable
+  protected ViewController<?> getCurrentContentController() {
+    if (controllers == null || controllers.isEmpty()) {
+      return null;
+    }
+    ViewController<?> c = getCurrentController();
+    if (c instanceof DialogsController) {
+      ChatsController chatsController = ((DialogsController) c).getChatsController();
+      if (chatsController != null) {
+        return chatsController;
+      }
+    }
+    return c;
+  }
+
   @Override
   public boolean showComposeWrap(ViewController<?> chatsController) {
     return false;
@@ -199,7 +224,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
       header.addSearchButton(menu, this);
     } else if (id == R.id.menu_clear) {
       header.addClearButton(menu, getSearchHeaderIconColorId(), getSearchBackButtonResource());
-    } else if (getCurrentController() instanceof Menu c) {
+    } else if (getCurrentContentController() instanceof Menu c) {
       c.fillMenuItems(id, header, menu);
     }
   }
@@ -286,8 +311,51 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
       }));
     } else if (id == R.id.menu_btn_clear) {
       clearSearchInput();
-    } else if (getCurrentController() instanceof Menu c) {
+    } else if (getCurrentContentController() instanceof Menu c) {
       c.onMenuItemPressed(id, view);
+    }
+  }
+
+
+  // Select mode & bulk actions
+
+  @Override
+  public int getSelectMenuId() {
+    ViewController<?> c = getCurrentContentController();
+    return c != null ? c.getSelectMenuId() : super.getSelectMenuId();
+  }
+
+  @Override
+  public void finishSelectMode(int position) {
+    ViewController<?> c = getCurrentContentController();
+    if (c instanceof SelectDelegate) {
+      ((SelectDelegate) c).finishSelectMode(position);
+    }
+  }
+
+  @Override
+  public void onEnterSelectMode() {
+    super.onEnterSelectMode();
+    ViewController<?> c = getCurrentContentController();
+    if (c != null) {
+      c.onEnterSelectMode();
+    }
+  }
+
+  @Override
+  public void onLeaveSelectMode() {
+    super.onLeaveSelectMode();
+    ViewController<?> c = getCurrentContentController();
+    if (c != null) {
+      c.onLeaveSelectMode();
+    }
+  }
+
+  @Override
+  public void onMoreItemPressed(int id) {
+    ViewController<?> c = getCurrentContentController();
+    if (c instanceof MoreDelegate) {
+      ((MoreDelegate) c).onMoreItemPressed(id);
     }
   }
 
