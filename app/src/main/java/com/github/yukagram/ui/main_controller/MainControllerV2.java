@@ -57,6 +57,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
   private ViewFlipper flipper;
   private Stack<ViewController<?>> controllers;
   private SearchController searchController;
+  private View dialogsView;
 
   @Override
   protected View onCreateView(Context context) {
@@ -72,7 +73,9 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
     };
 
     controllers = new Stack<>();
-    controllers.add(newDialogsController());
+    DialogsController c = newDialogsController();
+    dialogsView = c.getValue();
+    controllers.add(c);
 
     flipper = new ViewFlipper(context);
     flipper.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -87,7 +90,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
 
     flipper.setInAnimation(fadeIn);
     flipper.setOutAnimation(fadeOut);
-    flipper.addView(controllers.get(0).getValue()); // DialogsController
+    flipper.addView(dialogsView);
 
     mainWrap = new FrameLayoutFix(context);
     mainWrap.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -170,7 +173,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
   // Search
 
   protected View getSearchAntagonistView() {
-    return mainWrap;
+    return dialogsView;
   }
 
   @Override
@@ -203,14 +206,74 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
 
   @Override
   public void openSearchMode() {
+    if (inSearchMode() || searchController == null) {
+      return;
+    }
+    searchController.getValue();
+    searchController.attachSearchAdapter();
     super.openSearchMode();
+    if (!inSearchMode()) {
+      return;
+    }
     pushController(searchController);
+    searchController.onOpen();
   }
 
   @Override
   public void leaveSearchMode() {
+    boolean searchPushed = controllers != null && controllers.size() > 1;
     super.leaveSearchMode();
-    popController();
+    if (searchPushed) {
+      popController();
+    }
+    clearSearchInput();
+  }
+
+  @Override
+  protected void applySearchTransformFactor(float factor, boolean isOpening) {
+    super.applySearchTransformFactor(factor, isOpening);
+    if (searchController != null) {
+      searchController.onParentSearchTransform(factor, isOpening);
+    }
+  }
+
+  @Override
+  protected void onEnterSearchMode() {
+    super.onEnterSearchMode();
+    if (searchController != null) {
+      searchController.onEnterSearchMode();
+    }
+  }
+
+  @Override
+  protected void onAfterLeaveSearchMode() {
+    super.onAfterLeaveSearchMode();
+    if (searchController != null) {
+      searchController.onAfterLeaveSearchMode();
+    }
+  }
+
+  @Override
+  protected void onSearchInputChanged(String input) {
+    super.onSearchInputChanged(input);
+    if (searchController != null) {
+      searchController.onSearchInputChanged(input);
+    }
+  }
+
+  @Override
+  protected boolean needPreventiveKeyboardHide() {
+    return inSearchMode() && searchController != null && searchController.inChatSearchMode();
+  }
+
+  @Override
+  protected boolean useGraySearchHeader() {
+    return inSearchMode() || super.useGraySearchHeader();
+  }
+
+  @Override
+  public int getRootColorId() {
+    return inSearchMode() ? ColorId.background : super.getRootColorId();
   }
 
   @Override
