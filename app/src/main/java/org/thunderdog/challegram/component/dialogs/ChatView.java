@@ -24,11 +24,13 @@ import android.view.Gravity;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
 
 import org.drinkless.tdlib.TdApi;
+import org.thunderdog.challegram.MainActivity;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.core.Lang;
@@ -209,6 +211,12 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
   }
 
+  private ChatsController controller;
+
+  public void setController(ChatsController controller) {
+    this.controller = controller;
+  }
+
   public void setIsSelected (boolean isSelected, boolean animated) {
     this.isSelected.setValue(isSelected, animated);
   }
@@ -280,6 +288,9 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
   }
 
   public static int getTextTop (int chatListMode) {
+    if (YuSettings.Toggle.NewDialogsView.is()) {
+      return Screen.dp(38f);
+    }
     switch (chatListMode) {
       case Settings.CHAT_MODE_3LINE:
         return Screen.dp(32f);
@@ -296,6 +307,9 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
   }
 
   public static int getTitleTop (int chatListMode) {
+    if (YuSettings.Toggle.NewDialogsView.is()) {
+      return getTextOffset() + Screen.dp(17f);
+    }
     switch (chatListMode) {
       case Settings.CHAT_MODE_3LINE:
       case Settings.CHAT_MODE_3LINE_BIG:
@@ -329,14 +343,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
   }
 
   public static int getTitleTop2 (int chatListMode) {
-    switch (chatListMode) {
-      case Settings.CHAT_MODE_3LINE:
-      case Settings.CHAT_MODE_3LINE_BIG:
-        return Screen.dp(10f);
-      case Settings.CHAT_MODE_2LINE:
-      default:
-        return Screen.dp(12f);
-    }
+    return getTitleTop(chatListMode) - Screen.dp(4) - getTextOffset();
   }
 
   public static int getAvatarLeftFull (int chatListMode) {
@@ -519,7 +526,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
   public boolean canStartDrag (float x, float y) {
     int chatListMode = getChatListMode();
     int threshold = ChatView.getAvatarLeft(chatListMode) * 2 + ChatView.getAvatarSize(chatListMode);
-    if (Lang.rtl()) {
+    if (Lang.rtl() ^ YuSettings.Toggle.NewDialogsView.is()) {
       return x >= getMeasuredWidth() - threshold;
     } else {
       return x <= threshold;
@@ -545,6 +552,14 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     int top = ChatView.getAvatarTop(chatListMode);
     int left = Lang.rtl() ? getMeasuredWidth() - ChatView.getAvatarLeft(chatListMode) - size : ChatView.getAvatarLeft(chatListMode);
     return x >= left && x <= left + size && y >= top && y <= top + size;
+  }
+
+  public boolean isOnDragThingy (float x, float y) {
+    int chatListMode = getChatListMode();
+    int size = ChatView.getAvatarSize(chatListMode);
+    int top = ChatView.getAvatarTop(chatListMode);
+    int left = ChatView.getAvatarLeft(chatListMode);
+    return x >= getMeasuredWidth() - left - size && x <= getMeasuredWidth() - left && y >= top && y <= top + size;
   }
 
   private void layoutReceiver () {
@@ -585,6 +600,10 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     return false;
   }
 
+  private boolean isSpecialAllowDragMode() {
+    return YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial() && controller.getSelectedChatCount() != 0;
+  }
+
   @Override
   protected void onDraw (Canvas c) {
     if (chat == null) {
@@ -600,7 +619,24 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
       c.drawColor(ColorUtils.alphaColor(.8f, Theme.fillingColor()));
     }
 
-    c.drawText(chat.getTime(), (rtl ? viewWidth - chat.getTimeLeft() - chat.getTimeWidth() : chat.getTimeLeft()), getTitleTop(chatListMode), timePaint);
+    if (isSpecialAllowDragMode()) {
+      Drawable d = Drawables.get(R.drawable.baseline_drag_handle_24);
+      d.setBounds(
+        0,
+        0,
+        (int) (getAvatarSize(chatListMode) / 2f),
+        (int) (getAvatarSize(chatListMode) / 2f)
+      );
+      d.setColorFilter(Paints.getIconGrayPorterDuffPaint().getColorFilter());
+      d.setAlpha(Paints.getIconGrayPorterDuffPaint().getAlpha());
+      int saveCount = Views.save(c);
+      c.translate(
+        viewWidth - getAvatarLeft(chatListMode) - getAvatarSize(chatListMode) + getAvatarSize(chatListMode) / 4f,
+        getAvatarTop(chatListMode)
+      );
+      d.draw(c);
+      Views.restore(c, saveCount);
+    }
 
     Text title = chat.getTitle();
     if (title != null) {
@@ -608,7 +644,8 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
       int titleTop = getTitleTop2(chatListMode);
       if (chat.isSecretChat()) {
         Drawable d = Icons.getSecureDrawable();
-        Drawables.drawRtl(c, d, titleX - Screen.dp(7f), titleTop + title.getHeight() / 2 - d.getMinimumHeight() / 2, Paints.getGreenPorterDuffPaint(), viewWidth, rtl);
+        Drawables.drawRtl(c, d, titleX - Screen.dp(7f),
+                titleTop + title.getHeight() / 2 - d.getMinimumHeight() / 2, Paints.getGreenPorterDuffPaint(), viewWidth, rtl);
         titleX += Screen.dp(14f);
       }
 
@@ -641,11 +678,43 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
       Drawables.drawRtl(c, Icons.getChatMuteDrawable(ColorId.chatListMute), chat.getMuteLeft(), getMuteTop(chatListMode), Paints.getChatsMutePaint(), viewWidth, rtl);
     }
 
+    int badgeRight = chat.getTimeLeft() + chat.getTimeWidth();
+    int badgeLeft = chat.getTimeLeft();
+
     if (chat.isSending()) {
-      int x = chat.getChecksRight() - Screen.dp(10f) - Screen.dp(Icons.CLOCK_SHIFT_X);
+      badgeLeft -= Screen.dp(10f) - Screen.dp(Icons.CLOCK_SHIFT_X);
+    } else {
+      if (chat.isOutgoing() && !chat.isSelfChat()) {
+        if (chat.isUnread()) {
+          badgeLeft += Screen.dp(4f);
+        }
+        if (chat.showViews()) {
+          badgeLeft -= chat.getViewCounter().getScaledWidth(Screen.dp(3));
+        } else {
+          badgeLeft -= Screen.dp(24 - 8 + 3);
+        }
+      }
+      if (YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial()) {
+        badgeLeft -= Screen.dp(24);
+      }
+      if (chat.needDrawReactionsPreview()) {
+        badgeLeft -= chat.getReactionsWidth();
+      }
+    }
+
+    if (YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial()) {
+      c.drawRoundRect(badgeLeft + Screen.dp(1) - (isSpecialAllowDragMode() ? getAvatarSize(chatListMode) : 0),
+              getClockTop(chatListMode) - Screen.dp(2),
+              badgeRight + Screen.dp(4) - (isSpecialAllowDragMode() ? getAvatarSize(chatListMode) : 0),
+              getClockTop(chatListMode) + Screen.dp(17),
+              Screen.dp(6f), Screen.dp(6f), PorterDuffPaint.get(ColorId.background));
+    }
+
+    if (chat.isSending()) {
+      int x = chat.getChecksRight() - Screen.dp(10f) - Screen.dp(Icons.CLOCK_SHIFT_X) - (isSpecialAllowDragMode() ? getAvatarSize(chatListMode) : 0);
       Drawables.drawRtl(c, Icons.getClockIcon(ColorId.iconLight), x, getClockTop(chatListMode) - Screen.dp(Icons.CLOCK_SHIFT_Y), Paints.getIconLightPorterDuffPaint(), viewWidth, rtl);
     } else {
-      int x = chat.getChecksRight();
+      int x = chat.getChecksRight() - (isSpecialAllowDragMode() ? getAvatarSize(chatListMode) : 0);
       int y = getClockTop(chatListMode);
       if (chat.isOutgoing() && !chat.isSelfChat()) {
         if (chat.showViews()) {
@@ -663,15 +732,37 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
           x -= Screen.dp(24 - 8 + 3);
         }
       }
+      if (YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial()) {
+        Drawable d = Drawables.get(R.drawable.deproko_baseline_pin_24);
+        d.setBounds(0, 0, Screen.dp(14), Screen.dp(14));
+        d.setColorFilter(Paints.getIconGrayPorterDuffPaint().getColorFilter());
+        d.setAlpha(Paints.getIconGrayPorterDuffPaint().getAlpha());
+        int saveCount = Views.save(c);
+        int iconX = x - Screen.dp(12);
+        c.translate(
+                iconX,
+                y - Screen.dp(1)
+        );
+        d.draw(c);
+        Views.restore(c, saveCount);
+        x -= Screen.dp(24);
+      }
       if (chat.needDrawReactionsPreview()) {
         chat.getReactionsCounterDrawable().draw(c, x - chat.getReactionsWidth(), y + Screen.dp(6f));
       }
     }
 
+    c.drawText(chat.getTime(), (rtl ? viewWidth - chat.getTimeLeft() - chat.getTimeWidth() : chat.getTimeLeft() - (isSpecialAllowDragMode() ? getAvatarSize(chatListMode) : 0)), getTitleTop(chatListMode), timePaint);
+
     Counter counter = chat.getCounter();
     float counterRight = viewWidth - getRightPadding();
     float counterRadius = getCounterRadius();
     float counterCenterY = getCounterTop(chatListMode);
+
+    if (isSpecialAllowDragMode()) {
+      counterRight -= getAvatarSize(chatListMode);
+    }
+
     counter.draw(c, counterRight - counterRadius, counterCenterY, Gravity.RIGHT, 1f);
     counterRight -= counter.getScaledWidth(getTimePaddingLeft());
 
@@ -705,6 +796,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
         prefix.draw(c, getLeftPadding(chatListMode), textTop, null, textAlpha);
       }
       Text text = chat.getText();
+      int left = chat.getTextLeft();
       if (text != null) {
         if (chatListMode != Settings.CHAT_MODE_2LINE) {
           if (prefix != null) {
@@ -715,7 +807,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
         }
         IntList prefixIcons = chat.getTextIconIds();
         if (prefixIcons != null) {
-          int x = chat.getTextLeft();
+          int x = left;
           for (int i = 0; i < prefixIcons.size(); i++) {
             Paint paint = PorterDuffPaint.get(chat.getTextIconColorId(), textAlpha);
             int iconId = prefixIcons.get(i);
@@ -730,7 +822,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
           }
         }
 
-        text.draw(c, chat.getTextLeft(), textTop, null, textAlpha, textMediaReceiver);
+        text.draw(c, left, textTop, null, textAlpha, textMediaReceiver);
       }
 
       if (needRestore) {
@@ -757,7 +849,9 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     }
     avatarReceiver.draw(c);
 
-    DrawAlgorithms.drawIcon(c, avatarReceiver, 315f, chat.getScheduleAnimator().getFloatValue(), Theme.fillingColor(), getSparseDrawable(R.drawable.baseline_watch_later_10, ColorId.badgeMuted), PorterDuffPaint.get(ColorId.badgeMuted, chat.getScheduleAnimator().getFloatValue()));
+    DrawAlgorithms.drawIcon(c, avatarReceiver, 315f, chat.getScheduleAnimator().getFloatValue(), Theme.fillingColor(),
+            getSparseDrawable(R.drawable.baseline_watch_later_10, ColorId.badgeMuted),
+            PorterDuffPaint.get(ColorId.badgeMuted, chat.getScheduleAnimator().getFloatValue()));
     DrawAlgorithms.drawSimplestCheckBox(c, avatarReceiver, isSelected.getFloatValue());
   }
 
