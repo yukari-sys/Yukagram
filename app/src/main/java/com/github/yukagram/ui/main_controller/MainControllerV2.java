@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Transformation;
 import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
@@ -166,7 +165,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
     }
     ViewController<?> c = getCurrentController();
     if (c instanceof DialogsController) {
-      ChatsController chatsController = ((DialogsController) c).getChatsController();
+      ChatsController chatsController = ((DialogsController) c).getCurrentChatsController();
       if (chatsController != null) {
         return chatsController;
       }
