@@ -29,6 +29,7 @@ import androidx.annotation.IdRes;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.yukagram.YuSettings;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 
 import org.thunderdog.challegram.BuildConfig;
@@ -392,8 +393,10 @@ public class SettingsThemeController extends RecyclerViewController<SettingsThem
         }
       }
 
-      items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
-      items.add(new ListItem(ListItem.TYPE_VALUED_SETTING_COMPACT, R.id.btn_chatListStyle, 0, R.string.ChatListStyle));
+      if (!YuSettings.Toggle.NewDialogsView.is()) {
+        items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
+        items.add(new ListItem(ListItem.TYPE_VALUED_SETTING_COMPACT, R.id.btn_chatListStyle, 0, R.string.ChatListStyle));
+      }
 
       items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
       items.add(new ListItem(ListItem.TYPE_SETTING, R.id.btn_chatBackground, 0, R.string.Wallpaper));

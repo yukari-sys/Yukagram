@@ -96,7 +96,7 @@ public class ConnectionTitleController extends ViewController<MainControllerV2> 
         wrapper = new FrameLayout(context);
 
         FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.WRAP_CONTENT, getHeaderHeight());
-        params.leftMargin = Screen.dp(55f);
+        params.leftMargin = Screen.dp(68f);
 
         wrapper.setLayoutParams(params);
 
