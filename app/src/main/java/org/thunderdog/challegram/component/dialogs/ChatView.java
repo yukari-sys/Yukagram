@@ -26,6 +26,8 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.yukagram.YuSettings;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
@@ -522,6 +524,27 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     } else {
       return x <= threshold;
     }
+  }
+
+  /**
+   * With the new dialogs view the chat preview is opened by long-pressing the avatar only,
+   * so that a long press on the rest of the row can be used to select the chat.
+   * The original logic (preview from anywhere on the row) is kept when the toggle is off.
+   */
+  @Override
+  protected boolean canForceTouchAt (float x, float y) {
+    if (!YuSettings.Toggle.NewDialogsView.is()) {
+      return super.canForceTouchAt(x, y);
+    }
+    return isOnAvatar(x, y);
+  }
+
+  public boolean isOnAvatar (float x, float y) {
+    int chatListMode = getChatListMode();
+    int size = ChatView.getAvatarSize(chatListMode);
+    int top = ChatView.getAvatarTop(chatListMode);
+    int left = Lang.rtl() ? getMeasuredWidth() - ChatView.getAvatarLeft(chatListMode) - size : ChatView.getAvatarLeft(chatListMode);
+    return x >= left && x <= left + size && y >= top && y <= top + size;
   }
 
   private void layoutReceiver () {

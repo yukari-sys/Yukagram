@@ -56,11 +56,11 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
      * The single {@link ChatsController} hosted by the pager, or null when it isn't created (yet).
      * {@link MainControllerV2} needs it to route select mode & bulk action menu calls to the chats list.
      */
-    public ChatsController getChatsController() {
+    public ChatsController getCurrentChatsController() {
         return chatsController;
     }
 
-    public ChatsController newChatsController(int position) {
+    private ChatsController newChatsController(int position) {
         ChatsController c = new ChatsController(this.context, tdlib).setParent(getArguments());
         c.setArguments(new ChatsController.Arguments(ChatPosition.CHAT_LIST_MAIN).setTag(null).setIsBase(true));
         // Parent wrapper must be the root controller: HeaderView operates on it, and ChatsController

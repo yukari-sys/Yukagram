@@ -2249,6 +2249,10 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
           if (getSelectedChatCount() == 0) {
             tdlib.ui().showArchiveOptions(this, tdlib.chatList(ChatPosition.CHAT_LIST_ARCHIVE));
           }
+        } else if (YuSettings.Toggle.NewDialogsView.is() && canSelectChat(chat)) {
+          // New dialogs view: a long press on the row selects the chat, while the preview
+          // (and the options menu opened from its "More" button) is bound to the avatar.
+          selectUnselectChat(chat, true);
         } else {
           tdlib.ui().showChatOptions(this, chatList(), chat.getChatId(), null, new TdApi.MessageSourceChatList(), canSelectChat(chat), isChatSelected(chat), () -> selectUnselectChat(chat, true));
         }
@@ -3159,6 +3163,10 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
   @Override
   public boolean onInterceptLongPress (BaseView v, float x, float y) {
     if (!(v instanceof ChatView) || !((ChatView) v).canStartDrag(x, y))
+      return false;
+    // New dialogs view: outside of select mode the avatar long-press opens the chat preview,
+    // so the reorder drag must not grab it. In select mode the drag keeps priority.
+    if (YuSettings.Toggle.NewDialogsView.is() && getSelectedChatCount() == 0 && ((ChatView) v).isOnAvatar(x, y))
       return false;
     TGChat chat = ((ChatView) v).getChat();
     if (chatsView != null && chat.isPinned() && adapter.canDragPinnedChats()) {
