@@ -498,8 +498,20 @@ public class BaseView extends SparseDrawableView implements ClickHelper.Delegate
   private static final int FORCE_TOUCH_CHAT = 1;
   private static final int FORCE_TOUCH_CUSTOM = 2;
 
+  /**
+   * Whether a force touch (chat preview) may be triggered from this exact point.
+   * Returning false makes the long press fall back to {@link OnLongClickListener}.
+   * The default implementation preserves the original behavior for every view.
+   */
+  protected boolean canForceTouchAt (float x, float y) {
+    return true;
+  }
+
   private int needForceTouch (final float x, final float y) {
     if (!Config.FORCE_TOUCH_ENABLED) {
+      return FORCE_TOUCH_NONE;
+    }
+    if (!canForceTouchAt(x, y)) {
       return FORCE_TOUCH_NONE;
     }
     if (tdlib != null && chatId != 0 && Settings.instance().needPreviewChatOnHold()) {
