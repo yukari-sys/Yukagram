@@ -1067,7 +1067,7 @@ public abstract class ViewController<T> implements Future<View>, ThemeChangeList
     // children stuff
   }
 
-  protected final int getSelectedCount () {
+  public final int getSelectedCount() {
     return counterHeaderView != null ? counterHeaderView.getCounter() : 0;
   }
 
