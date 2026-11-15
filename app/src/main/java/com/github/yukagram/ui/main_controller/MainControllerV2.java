@@ -23,10 +23,17 @@ import org.thunderdog.challegram.navigation.BackHeaderButton;
 import org.thunderdog.challegram.navigation.HeaderView;
 import org.thunderdog.challegram.navigation.Menu;
 import org.thunderdog.challegram.navigation.MoreDelegate;
+import org.thunderdog.challegram.navigation.NavigationController;
 import org.thunderdog.challegram.navigation.SelectDelegate;
 import org.thunderdog.challegram.navigation.ViewController;
+import org.thunderdog.challegram.telegram.ConnectionState;
+import org.thunderdog.challegram.telegram.GlobalAccountListener;
+import org.thunderdog.challegram.telegram.GlobalConnectionListener;
 import org.thunderdog.challegram.telegram.Tdlib;
+import org.thunderdog.challegram.telegram.TdlibAccount;
 import org.thunderdog.challegram.telegram.TdlibCounter;
+import org.thunderdog.challegram.telegram.TdlibManager;
+import org.thunderdog.challegram.telegram.TdlibUi;
 import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Paints;
@@ -41,10 +48,17 @@ import java.util.Stack;
 import me.vkryl.android.widget.FrameLayoutFix;
 import me.vkryl.core.lambda.FutureBool;
 
-public class MainControllerV2 extends AbstractMainController<Void> implements Menu, SelectDelegate, MoreDelegate {
+public class MainControllerV2 
+    extends 
+        AbstractMainController<Void> 
+    implements 
+        Menu, SelectDelegate, MoreDelegate
+{
 
   public MainControllerV2(Context context, Tdlib tdlib) {
     super(context, tdlib);
+
+    init();
   }
 
   @Override
@@ -54,7 +68,7 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
 
   @Override
   public CharSequence getName() {
-    return Lang.getString(R.string.Chats);
+    return getDefaultTitle();
   }
 
   private FrameLayoutFix mainWrap;
@@ -62,6 +76,17 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
   private Stack<ViewController<?>> controllers;
   private SearchController searchController;
   private View dialogsView;
+  private ConnectionTitleController connectionTitleController;
+
+  public void init() {
+    controllers = new Stack<>();
+    DialogsController c = newDialogsController();
+    dialogsView = c.getValue();
+    controllers.add(c);
+
+    searchController = newSearchController();
+    connectionTitleController = newTitleController();
+  }
 
   @Override
   protected View onCreateView(Context context) {
@@ -75,11 +100,6 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
         c.drawRect(0, 0, getMeasuredWidth(), Size.getHeaderDrawerSize(), Paints.fillingPaint(Theme.getColor(ColorId.filling)));
       }
     };
-
-    controllers = new Stack<>();
-    DialogsController c = newDialogsController();
-    dialogsView = c.getValue();
-    controllers.add(c);
 
     flipper = new ViewFlipper(context);
     flipper.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -106,12 +126,15 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
 
     tdlib.wallpaper().ensureWallpaperAvailability();
 
-    searchController = newSearchController();
-
     return contentView;
   }
 
-  public DialogsController newDialogsController() {
+  @Override
+  public View getCustomHeaderCell() {
+    return connectionTitleController.getValue();
+  }
+
+  private DialogsController newDialogsController() {
     DialogsController c = new DialogsController(this.context, tdlib);
     c.setArguments(this);
     c.setParentWrapper(this);
@@ -119,12 +142,29 @@ public class MainControllerV2 extends AbstractMainController<Void> implements Me
     return c;
   }
 
-  public SearchController newSearchController() {
+  private SearchController newSearchController() {
     SearchController c = new SearchController(context, tdlib);
     c.setArguments(this);
     c.setParentWrapper(this);
     c.bindThemeListeners(this);
     return c;
+  }
+
+  private ConnectionTitleController newTitleController() {
+    ConnectionTitleController c = new ConnectionTitleController(context, tdlib);
+    c.setArguments(this);
+    c.setParentWrapper(this);
+    c.bindThemeListeners(this);
+    c.init();
+    return c;
+  }
+  
+  public String getDefaultTitle() {
+    return Lang.getString(R.string.AppName);
+  }
+
+  public HeaderView getHeaderView() {
+    return headerView;
   }
 
   public void pushController(ViewController<?> controller) {

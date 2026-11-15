@@ -60,6 +60,10 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         return chatsController;
     }
 
+    public ChatsController getChatsController(int position) {
+        return chatsController; // TODO: multiple chat controllers, folders
+    }
+
     private ChatsController newChatsController(int position) {
         ChatsController c = new ChatsController(this.context, tdlib).setParent(getArguments());
         c.setArguments(new ChatsController.Arguments(ChatPosition.CHAT_LIST_MAIN).setTag(null).setIsBase(true));
