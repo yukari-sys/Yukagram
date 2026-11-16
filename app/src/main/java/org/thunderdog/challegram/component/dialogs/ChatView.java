@@ -682,7 +682,7 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     int badgeLeft = chat.getTimeLeft();
 
     if (chat.isSending()) {
-      badgeLeft -= Screen.dp(10f) - Screen.dp(Icons.CLOCK_SHIFT_X);
+      badgeLeft -= Screen.dp(10f) + Screen.dp(Icons.CLOCK_SHIFT_X);
     } else {
       if (chat.isOutgoing() && !chat.isSelfChat()) {
         if (chat.isUnread()) {
@@ -758,10 +758,6 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
     float counterRight = viewWidth - getRightPadding();
     float counterRadius = getCounterRadius();
     float counterCenterY = getCounterTop(chatListMode);
-
-    if (isSpecialAllowDragMode()) {
-      counterRight -= getAvatarSize(chatListMode);
-    }
 
     counter.draw(c, counterRight - counterRadius, counterCenterY, Gravity.RIGHT, 1f);
     counterRight -= counter.getScaledWidth(getTimePaddingLeft());
