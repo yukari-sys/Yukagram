@@ -80,12 +80,26 @@ public class MainControllerV2
 
   public void init() {
     controllers = new Stack<>();
-    DialogsController c = newDialogsController();
-    dialogsView = c.getValue();
-    controllers.add(c);
 
-    searchController = newSearchController();
-    connectionTitleController = newTitleController();
+    DialogsController dialogsController = new DialogsController(this.context, tdlib);
+    dialogsController.setArguments(this);
+    dialogsController.setParentWrapper(this);
+    dialogsController.bindThemeListeners(this);
+    dialogsController.initFolders();
+
+    dialogsView = dialogsController.getValue();
+    controllers.add(dialogsController);
+
+    searchController = new SearchController(context, tdlib);
+    searchController.setArguments(this);
+    searchController.setParentWrapper(this);
+    searchController.bindThemeListeners(this);
+
+    connectionTitleController = new ConnectionTitleController(context, tdlib);
+    connectionTitleController.setArguments(this);
+    connectionTitleController.setParentWrapper(this);
+    connectionTitleController.bindThemeListeners(this);
+    connectionTitleController.init();
   }
 
   @Override
@@ -132,31 +146,6 @@ public class MainControllerV2
   @Override
   public View getCustomHeaderCell() {
     return connectionTitleController.getValue();
-  }
-
-  private DialogsController newDialogsController() {
-    DialogsController c = new DialogsController(this.context, tdlib);
-    c.setArguments(this);
-    c.setParentWrapper(this);
-    c.bindThemeListeners(this);
-    return c;
-  }
-
-  private SearchController newSearchController() {
-    SearchController c = new SearchController(context, tdlib);
-    c.setArguments(this);
-    c.setParentWrapper(this);
-    c.bindThemeListeners(this);
-    return c;
-  }
-
-  private ConnectionTitleController newTitleController() {
-    ConnectionTitleController c = new ConnectionTitleController(context, tdlib);
-    c.setArguments(this);
-    c.setParentWrapper(this);
-    c.bindThemeListeners(this);
-    c.init();
-    return c;
   }
   
   public String getDefaultTitle() {

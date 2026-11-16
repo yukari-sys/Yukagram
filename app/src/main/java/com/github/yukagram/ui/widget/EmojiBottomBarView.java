@@ -41,7 +41,6 @@ public class EmojiBottomBarView extends FrameLayoutFix {
   private int currentSelectedIndex = -1;
   private List<Button> buttons;
   private LinearLayout linearLayout;
-  private ShadowView shadowView;
 
   public EmojiBottomBarView(@NonNull Context context) {
     super(context);
