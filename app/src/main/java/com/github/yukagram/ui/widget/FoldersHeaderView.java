@@ -160,9 +160,9 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     int i = 0;
     for (TdApi.ChatFolderInfo folder : folders) {
       if (i == mainChatListPosition) {
-        addButton(themeProvider, i++, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
+        addButton(themeProvider, i++, folder, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
       }
-      addButton(themeProvider, i++, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
+      addButton(themeProvider, i++, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
     }
 
     if (!buttons.isEmpty()) {
@@ -175,7 +175,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     }
   }
 
-  public void addButton(ViewController<?> themeProvider, int index, String folderName, int iconId) {
+  public void addButton(ViewController<?> themeProvider, int index, TdApi.ChatFolderInfo folderInfo, String folderName, int iconId) {
     LayoutParams params = FrameLayoutFix.newParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -188,6 +188,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     title.setId(index);
     title.textView.setText(folderName);
     title.iconView.setImageResource(iconId);
+    title.folderInfo = folderInfo;
     title.setLayoutParams(params);
     title.setOnClickListener(onClickListener);
     title.setOnLongClickListener(onLongClickListener);
@@ -227,19 +228,25 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     currentSelectedIndex = index;
     pillAnimator.setAnimatedValue((float) index);
 
-    int itemLeft = b.getLeft();
-    int itemRight = b.getRight();
+    if (index == 0) {
+      scrollView.smoothScrollTo(0, 0);
+    } else if (index == buttons.size() - 1) {
+      scrollView.smoothScrollTo(linearLayout.getRight(), 0);
+    } else {
+      int itemLeft = b.getLeft();
+      int itemRight = b.getRight();
 
-    int scrollLeft = scrollView.getScrollX();
-    int scrollRight = scrollLeft + scrollView.getWidth();
+      int scrollLeft = scrollView.getScrollX();
+      int scrollRight = scrollLeft + scrollView.getWidth();
 
-    if (itemLeft < scrollLeft) {
-      scrollView.smoothScrollTo(itemLeft, 0);
-    } else if (itemRight > scrollRight) {
-      scrollView.smoothScrollTo(
-        itemRight - scrollView.getWidth(),
-        0
-      );
+      if (itemLeft < scrollLeft) {
+        scrollView.smoothScrollTo(itemLeft, 0);
+      } else if (itemRight > scrollRight) {
+        scrollView.smoothScrollTo(
+                itemRight - scrollView.getWidth(),
+                0
+        );
+      }
     }
   }
 
@@ -273,6 +280,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
     private NoScrollTextView textView;
     private ImageView iconView;
+    private TdApi.ChatFolderInfo folderInfo;
 
     public void init(ViewController<?> themeProvider, boolean selected) {
       this.themeProvider = themeProvider;
@@ -316,6 +324,10 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
     public BoolAnimator getAnimator() {
       return animator;
+    }
+
+    public TdApi.ChatFolderInfo getFolderInfo() {
+      return folderInfo;
     }
 
     @Override
