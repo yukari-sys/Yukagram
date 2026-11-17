@@ -44,7 +44,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public void fillHeader() {
-        header.fillButtons(getArguments(), mainChatListPosition, Arrays.stream(folders).map(o -> o.name.text.text).toList()); // FIXME
+        header.fillButtons(getArguments(), mainChatListPosition, folders);
     }
 
     @Override
