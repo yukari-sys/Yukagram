@@ -1,6 +1,7 @@
 package com.github.yukagram.ui.main_controller;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -59,16 +60,22 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         pager.addOnPageChangeListener(this);
         pager.setAdapter(adapter);
 
-        FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.topMargin = header.getMeasuredHeight();
-        pager.setLayoutParams(params);
-
         container = new FrameLayoutFix(context);
         container.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         container.addView(pager);
         container.addView(header);
 
+        recalculatePaddings();
+
         return container;
+    }
+
+    public void recalculatePaddings() {
+        header.post(() -> {
+            FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.topMargin = header.getMeasuredHeight();
+            pager.setLayoutParams(params);
+        });
     }
 
     @Override
@@ -187,8 +194,6 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         fillHeader();
         header.invalidate();
 
-        FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.topMargin = header.getMeasuredHeight();
-        pager.setLayoutParams(params);
+        recalculatePaddings();
     }
 }

@@ -54,7 +54,7 @@ public class ConnectionTitleController extends ViewController<MainControllerV2> 
     }
 
     public void init() {
-        animator = new BoolAnimator(0, this, AnimatorUtils.LINEAR_INTERPOLATOR, 200, false) {
+        animator = new BoolAnimator(0, this, AnimatorUtils.DECELERATE_INTERPOLATOR, 200, false) {
             @Override
             public void onFactorChangeFinished(int id, float finalFactor, FactorAnimator callee) {
                 super.onFactorChangeFinished(id, finalFactor, callee);
