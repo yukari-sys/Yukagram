@@ -1,0 +1,108 @@
+name: Build Develop Yukagram
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+
+jobs:
+  test:
+    name: Debug build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+          fetch-depth: 1
+
+      - name: Upload git checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: yukagram-src
+          path: |
+            .
+            !.git/**
+            !**/.git/**
+            !.git*
+            !**/.git*
+          compression-level: 9
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup properties
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+        run: |
+          {
+            echo "telegram.api_hash=$TELEGRAM_API_HASH"
+            echo "telegram.api_id=$TELEGRAM_API_ID"
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "tgx.extension=none"
+          } > local.properties
+      
+      - name: Build Debug
+        env:
+          GRADLE_OPTS: >-
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m"
+            -Dorg.gradle.workers.max=1
+            -Dorg.gradle.daemon=false
+            -Dkotlin.compiler.execution.strategy=in-process
+        run: ./gradlew assembleLatestArm64Debug
+      
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: yukagram-debug-arm64-none
+          path: app/build/outputs/apk/latestArm64/debug/*.apk
+          if-no-files-found: error
+          archive: false
+
+  publish:
+    name: Publish on Telegram
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: "*.apk"
+          merge-multiple: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Install requirements
+        run: pip install -r .github/scripts/requirements.txt
+
+      - name: Send APKs to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GIT_COMMIT_ID: ${{ github.sha }}
+          GIT_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          ALLOW_DEBUG_APK: y
+        run: python .github/scripts/publish-telegram.py
