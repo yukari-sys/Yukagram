@@ -20,8 +20,8 @@ Todo list:
 - [x] Hide trending stickers/emojis
 - [x] Hide phone numbers
 - [x] Hide camera button from input bar
-- [x] Redesign emoji keyboard
-- [ ] Redesign dialogs view (MainController)
+- [x] Redesign emoji keyboard (WIP)
+- [x] Redesign dialogs view (WIP)
 - [ ] "My profile" drawer button
 - [ ] Media/music player customizations
 - [ ] Apple emojis for reactions
