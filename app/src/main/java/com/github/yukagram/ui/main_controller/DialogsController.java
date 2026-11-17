@@ -14,6 +14,7 @@ import com.github.yukagram.ui.widget.FoldersHeaderView;
 
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.config.Config;
+import org.thunderdog.challegram.navigation.NavigationController;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.ChatFoldersListener;
 import org.thunderdog.challegram.telegram.Tdlib;
@@ -70,12 +71,24 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         return container;
     }
 
+    public boolean hasFolders() {
+        return folders.length != 0;
+    }
+
     public void recalculatePaddings() {
         header.post(() -> {
             FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             params.topMargin = header.getMeasuredHeight();
             pager.setLayoutParams(params);
         });
+    }
+
+    @Override
+    public boolean canSlideBackFrom (NavigationController navigationController, float x, float y) {
+        if (!super.canSlideBackFrom(navigationController, x, y)) {
+            return false;
+        }
+        return pager.getCurrentItem() == 0;
     }
 
     @Override
