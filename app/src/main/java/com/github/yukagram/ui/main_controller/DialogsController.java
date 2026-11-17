@@ -1,6 +1,7 @@
 package com.github.yukagram.ui.main_controller;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public void fillHeader() {
-        header.fillButtons(getArguments(), mainChatListPosition, Arrays.stream(folders).map(o -> o.name.text.text).toList()); // FIXME
+        header.fillButtons(getArguments(), mainChatListPosition, folders);
     }
 
     @Override
@@ -88,7 +89,11 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         if (!super.canSlideBackFrom(navigationController, x, y)) {
             return false;
         }
-        return pager.getCurrentItem() == 0;
+
+        Rect rect = new Rect();
+        header.getHitRect(rect);
+
+        return pager.getCurrentItem() == 0 && !rect.contains((int) x, (int) y);
     }
 
     @Override
@@ -136,16 +141,16 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     @Override
-    public boolean onLongClick(View v) {
-        return true;
-    }
-
-    @Override
     public void onClick(View v) {
         if (v instanceof FoldersHeaderView.Button) {
             int position = v.getId();
             pager.setCurrentItem(position);
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        return true;
     }
 
     public static class Adapter extends PagerAdapter {
