@@ -75,13 +75,14 @@ public class MainControllerV2
   private ViewFlipper flipper;
   private Stack<ViewController<?>> controllers;
   private SearchController searchController;
+  private DialogsController dialogsController;
   private View dialogsView;
   private ConnectionTitleController connectionTitleController;
 
   public void init() {
     controllers = new Stack<>();
 
-    DialogsController dialogsController = new DialogsController(this.context, tdlib);
+    dialogsController = new DialogsController(this.context, tdlib);
     dialogsController.setArguments(this);
     dialogsController.setParentWrapper(this);
     dialogsController.bindThemeListeners(this);
@@ -146,6 +147,17 @@ public class MainControllerV2
   @Override
   public View getCustomHeaderCell() {
     return connectionTitleController.getValue();
+  }
+
+  @Override
+  public boolean canSlideBackFrom (NavigationController navigationController, float x, float y) {
+    if (!super.canSlideBackFrom(navigationController, x, y)) {
+      return false;
+    }
+    if (hasFolders() && !dialogsController.canSlideBackFrom(navigationController, x, y)) {
+      return false;
+    }
+    return true;
   }
   
   public String getDefaultTitle() {
@@ -219,7 +231,7 @@ public class MainControllerV2
   }
 
   public boolean hasFolders() {
-    return false; // TODO: folders
+    return dialogsController.hasFolders();
   }
 
 
