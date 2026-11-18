@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Debug build
+    name: Release build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -46,20 +46,40 @@ jobs:
             echo "tgx.extension=none"
           } > local.properties
       
-      - name: Build Debug
+      - name: Setup properties
+        env:
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          KEYSTORE: ${{ secrets.KEYSTORE }}
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
+        run: |
+          echo "$KEYSTORE" | base64 -d > release.p12
+          echo "$KEYSTORE_PROPERTIES" | base64 -d > keystore.properties
+          echo >> keystore.properties
+          echo "keystore.file=$PWD/release.p12" >> keystore.properties
+
+          {
+            echo "telegram.api_hash=$TELEGRAM_API_HASH"
+            echo "telegram.api_id=$TELEGRAM_API_ID"
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "keystore.file=keystore.properties"
+            echo "tgx.extension=none"
+          } > local.properties
+      
+      - name: Build Release APK
         env:
           GRADLE_OPTS: >-
             -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m"
             -Dorg.gradle.workers.max=1
             -Dorg.gradle.daemon=false
             -Dkotlin.compiler.execution.strategy=in-process
-        run: ./gradlew assembleLatestArm64Debug
-      
+        run: ./gradlew assembleLatestUniversalRelease
+  
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: yukagram-debug-arm64-none
-          path: app/build/outputs/apk/latestArm64/debug/*.apk
+          name: yukagram-develop-release
+          path: app/build/outputs/apk/latestUniversal/release/*.apk
           if-no-files-found: error
           archive: false
 

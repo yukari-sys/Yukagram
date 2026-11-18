@@ -23,8 +23,8 @@ async def main():
             f"**[{COMMIT_ID[:7]}]"
             f"(https://github.com/yukari-sys/Yukagram/commit/{COMMIT_ID})**\n\n"
             f"{COMMIT_MESSAGE}"
-            ("\n\n!! development build !!" if DEVELOP_BUILD else "")
-        )
+        ) + ("\n\n!! development build !!" if DEVELOP_BUILD else "")
+        
 
         if not files:
             print("[fatal] no file to send")
