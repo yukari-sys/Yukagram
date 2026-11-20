@@ -78,9 +78,17 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
     public void recalculatePaddings() {
         header.post(() -> {
-            FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            params.topMargin = header.getMeasuredHeight();
-            pager.setLayoutParams(params);
+            int addSomething = playerOffset;
+            {
+                FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(header.getLayoutParams());
+                params.topMargin = addSomething;
+                header.setLayoutParams(params);
+            }
+            {
+                FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(pager.getLayoutParams());
+                params.topMargin = header.getMeasuredHeight() + addSomething;
+                pager.setLayoutParams(params);
+            }
         });
     }
 
@@ -117,14 +125,33 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         return c;
     }
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    boolean doAnimate = true;
+    int animateOn = -1;
 
+    @Override
+    public void onPageScrolled(int position, float factor, int factorPixels) {
+        int start = pager.getCurrentItem();
+        int end = position == start ? position + 1 : position;
+        float f_factor = position == start ? factor : 1 - factor;
+
+        if (f_factor == 0 && animateOn == start) doAnimate = true;
+        if (!doAnimate) return;
+
+        header.scrollTo(start, end, f_factor);
     }
 
     @Override
     public void onPageSelected(int position) {
-        header.setSelectedIndex(position);
+        header.setSelectedIndex(position, false, true);
+    }
+
+    int playerOffset = 0;
+
+    @Override
+    protected boolean applyPlayerOffset(float factor, float top) {
+        playerOffset = (int)(top * factor);
+        recalculatePaddings();
+        return super.applyPlayerOffset(factor, top);
     }
 
     @Override
@@ -144,6 +171,11 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     public void onClick(View v) {
         if (v instanceof FoldersHeaderView.Button) {
             int position = v.getId();
+            header.setSelectedIndex(position, true);
+            header.animationStart = pager.getCurrentItem();
+            header.animationEnd = position;
+            animateOn = position;
+            doAnimate = false;
             pager.setCurrentItem(position);
         }
     }
