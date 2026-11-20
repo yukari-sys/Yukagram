@@ -37,10 +37,11 @@ import me.vkryl.android.widget.FrameLayoutFix;
 * Pill-alike bottom bar for emoji keyboard
 */
 
-public class EmojiBottomBarView extends FrameLayoutFix {
+public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator.Target {
   private int currentSelectedIndex = -1;
   private List<Button> buttons;
   private LinearLayout linearLayout;
+  private BoolAnimator hidden;
 
   public EmojiBottomBarView(@NonNull Context context) {
     super(context);
@@ -116,6 +117,8 @@ public class EmojiBottomBarView extends FrameLayoutFix {
 
     setAllowMedia(allowMedia);
     setHasGifs(hasGifs);
+
+    hidden = new BoolAnimator(0, (FactorAnimator.Target) this, AnimatorUtils.DECELERATE_INTERPOLATOR, 200L);
   }
 
   public void setAllowMedia(boolean value) {
@@ -153,6 +156,15 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     for (TextView element : buttons) {
       element.setOnLongClickListener(onLongClickListener);
     }
+  }
+
+  public void setHidden(boolean value) {
+    hidden.setValue(value, true);
+  }
+
+  @Override
+  public void onFactorChanged(int id, float factor, float fraction, FactorAnimator callee) {
+    setTranslationY(factor * Screen.dp(10));
   }
 
   public static class Button extends NoScrollTextView implements FactorAnimator.Target {

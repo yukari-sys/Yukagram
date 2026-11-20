@@ -694,11 +694,11 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
           badgeLeft -= Screen.dp(24 - 8 + 3);
         }
       }
+      if (chat.needDrawReactionsPreview()) {
+        badgeLeft -= chat.getReactionsWidth() != 0 ? chat.getReactionsWidth() + Screen.dp(7) : 0;
+      }
       if (YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial()) {
         badgeLeft -= Screen.dp(24);
-      }
-      if (chat.needDrawReactionsPreview()) {
-        badgeLeft -= chat.getReactionsWidth();
       }
     }
 
@@ -732,6 +732,10 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
           x -= Screen.dp(24 - 8 + 3);
         }
       }
+      if (chat.needDrawReactionsPreview()) {
+        chat.getReactionsCounterDrawable().draw(c, x - chat.getReactionsWidth(), y + Screen.dp(6f));
+        x -= chat.getReactionsWidth() != 0 ? chat.getReactionsWidth() + Screen.dp(7) : 0;
+      }
       if (YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial()) {
         Drawable d = Drawables.get(R.drawable.deproko_baseline_pin_24);
         d.setBounds(0, 0, Screen.dp(14), Screen.dp(14));
@@ -745,10 +749,6 @@ public class ChatView extends BaseView implements TdlibSettingsManager.Preferenc
         );
         d.draw(c);
         Views.restore(c, saveCount);
-        x -= Screen.dp(24);
-      }
-      if (chat.needDrawReactionsPreview()) {
-        chat.getReactionsCounterDrawable().draw(c, x - chat.getReactionsWidth(), y + Screen.dp(6f));
       }
     }
 
