@@ -54,7 +54,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
   private LinearLayout linearLayout;
   private HorizontalScrollView scrollView;
   private DialogsController parent;
-  private FloatAnimator pillAnimator;
+  private FloatAnimator animator;
 
   public FoldersHeaderView(@NonNull Context context) {
     super(context);
@@ -77,7 +77,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     ));
     scrollView.setHorizontalScrollBarEnabled(false);
 
-    scrollView.setOutlineProvider(new ViewOutlineProvider() {
+    setOutlineProvider(new ViewOutlineProvider() {
       @Override
       public void getOutline(View view, Outline outline) {
         outline.setRect(
@@ -86,9 +86,9 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
       }
     });
 
-    scrollView.setElevation(3);
+    setElevation(3);
 
-    ViewSupport.setThemedBackground(scrollView, ColorId.background, themeProvider);
+    ViewSupport.setThemedBackground(scrollView, ColorId.headerBackground, themeProvider);
 
     linearLayout = new LinearLayout(getContext());
 
@@ -104,7 +104,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     scrollView.addView(linearLayout, layoutParams);
     addView(scrollView);
 
-    pillAnimator = new FloatAnimator(200, AnimatorUtils.DECELERATE_INTERPOLATOR, currentSelectedIndex, this);
+    animator = new FloatAnimator(200, AnimatorUtils.DECELERATE_INTERPOLATOR, 0, this);
 
     setLayoutParams(FrameLayoutFix.newParams(
       ViewGroup.LayoutParams.MATCH_PARENT,
@@ -115,8 +115,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     setVisibility(View.GONE);
   }
 
-  public RectF getButtonPill(int index) {
-    Button b = buttons.get(index);
+  public RectF getButtonPill(Button b) {
     return new RectF(
       b.getLeft() + b.getPaddingLeft() - Screen.dp(3),
       b.getBottom() + Screen.dp(2),
@@ -134,18 +133,62 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     );
   }
 
-  @Override
-  public void onAnimationUpdate(@NotNull Float newValue) {
-    int floor = (int) Math.floor(newValue);
-    int ceiling = (int) Math.ceil(newValue);
+  public int animationStart;
+  public int animationEnd;
 
-    if (floor == ceiling) {
-      pillRect = getButtonPill(floor);
-    } else {
-      float factor = newValue - floor;
-      pillRect = rectFLerp(getButtonPill(floor), getButtonPill(ceiling), factor);
+  public void scrollTo(int positionStart, int positionEnd, float factor) {
+    if (animator.isAnimating()) {
+      return;
     }
+    animationStart = positionStart;
+    animationEnd = positionEnd;
+    animator.setForcedValue(factor);
+  }
+
+  public void animatedScrollTo(int positionStart, int positionEnd) {
+    if (animationStart == positionStart && animationEnd == positionEnd && animator.getFinalValue() == 1) {
+      return;
+    }
+    animator.setForcedValue(0f);
+    animationStart = positionStart;
+    animationEnd = positionEnd;
+    animator.setAnimatedValue(1f);
+  }
+
+  @Override
+  public void onAnimationUpdate(@NotNull Float factor) {
+    if (factor == 0) return;
+
+    int start = Math.max(0, animationStart);
+    int end = Math.min(buttons.size() - 1, animationEnd);
+
+    Button bs = buttons.get(start);
+
+    if (start == end) {
+      pillRect = getButtonPill(bs);
+      scrollView.postInvalidateOnAnimation();
+
+      bs.animator.forceValue(true, 1);
+
+      return;
+    }
+
+    Button be = buttons.get(end);
+
+    pillRect = rectFLerp(getButtonPill(bs), getButtonPill(be), factor);
     scrollView.postInvalidateOnAnimation();
+
+    bs.animator.forceValue(bs.animator.getValue(), 1 - factor);
+    be.animator.forceValue(be.animator.getValue(), factor);
+  }
+
+  @Override
+  public void onAnimationFinish(@NotNull Float factor, boolean byAnimationEnd) {
+    if (factor == 0) return;
+
+    onAnimationUpdate(factor);
+
+    animator.setForcedValue(0f);
   }
 
   private RectF pillRect = new RectF();
@@ -167,11 +210,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
     if (!buttons.isEmpty()) {
       setVisibility(View.VISIBLE);
-
-      buttons.get(currentSelectedIndex).post(() -> {
-        pillRect = getButtonPill(currentSelectedIndex);
-        scrollView.postInvalidateOnAnimation();
-      });
+      buttons.get(currentSelectedIndex).post(() -> scrollTo(currentSelectedIndex, currentSelectedIndex, 1));
     }
   }
 
@@ -215,18 +254,32 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     }
   }
 
-  public void setSelectedIndex (int index) {
+  public void setSelectedIndex (int index, boolean animate) {
+    setSelectedIndex(index, animate, false);
+  }
+
+  /**
+   * Adds the extra **nigga** that fixes everything.
+   * Don't remove it. Very important to have a nigga here. It fixes; IDK
+   * Want me to continue writing the furry hentai poem or do anything else?
+   * bibecode.
+   * <p>
+   * Co-Authored-By: Chatgipiti Asstra
+   */
+  public void setSelectedIndex (int index, boolean animate, boolean nigga) {
     if (index == currentSelectedIndex) {
       return;
     }
 
-    Button b = buttons.get(index);
+    if (animate) animatedScrollTo(currentSelectedIndex, index);
+    else if (!nigga) scrollTo(currentSelectedIndex, index, 1);
 
-    buttons.get(currentSelectedIndex).getAnimator().setValue(false, true);
+    Button b = buttons.get(index);
     b.getAnimator().setValue(true, true);
 
+    buttons.get(currentSelectedIndex).getAnimator().setValue(false, true);
+
     currentSelectedIndex = index;
-    pillAnimator.setAnimatedValue((float) index);
 
     if (index == 0) {
       scrollView.smoothScrollTo(0, 0);
@@ -346,6 +399,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
     @Override
     public void onFactorChangeFinished(int id, float finalFactor, FactorAnimator callee) {
+      onFactorChanged(id, finalFactor, 0, callee);
       themeProvider.addOrUpdateThemeTextColorListener(this, finalFactor == 1 ? activeColor : inactiveColor);
     }
   }

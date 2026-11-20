@@ -3,6 +3,7 @@ package com.github.yukagram.ui.main_controller;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -37,6 +38,7 @@ import org.thunderdog.challegram.telegram.TdlibUi;
 import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Paints;
+import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.unsorted.Size;
 import org.thunderdog.challegram.unsorted.Test;
@@ -103,13 +105,15 @@ public class MainControllerV2
     connectionTitleController.init();
   }
 
+  FrameLayoutFix contentView;
+
   @Override
   protected View onCreateView(Context context) {
     if (BuildConfig.DEBUG) {
       Test.execute();
     }
 
-    FrameLayoutFix contentView = new FrameLayoutFix(context) {
+    contentView = new FrameLayoutFix(context) {
       @Override
       protected void onDraw(Canvas c) {
         c.drawRect(0, 0, getMeasuredWidth(), Size.getHeaderDrawerSize(), Paints.fillingPaint(Theme.getColor(ColorId.filling)));
@@ -145,6 +149,11 @@ public class MainControllerV2
   }
 
   @Override
+  protected boolean applyPlayerOffset(float factor, float top) {
+    return dialogsController.applyPlayerOffset(factor, top);
+  }
+
+  @Override
   public View getCustomHeaderCell() {
     return connectionTitleController.getValue();
   }
@@ -162,10 +171,6 @@ public class MainControllerV2
   
   public String getDefaultTitle() {
     return Lang.getString(R.string.AppName);
-  }
-
-  public HeaderView getHeaderView() {
-    return headerView;
   }
 
   public void pushController(ViewController<?> controller) {
