@@ -38,6 +38,8 @@ import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.yukagram.ui.AuthKeyController;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BuildConfig;
 import org.thunderdog.challegram.Log;
@@ -370,6 +372,7 @@ public class PhoneController extends EditBaseController<Void> implements Setting
     if (mode != MODE_ADD_CONTACT) {
       this.baseItems.add(hintItem);
     }
+    this.baseItems.add(new ListItem(ListItem.TYPE_BUTTON, R.id.btn_loginAuthKey, 0, R.string.yu_LoginViaAuthKey));
 
     if (isAccountAdd) {
       // this.baseItems.add(new SettingItem(SettingItem.TYPE_CHECKBOX_OPTION_REVERSE, R.id.btn_syncContacts, 0, R.string.SyncContacts, R.id.btn_syncContacts, true));
@@ -604,6 +607,8 @@ public class PhoneController extends EditBaseController<Void> implements Setting
         this.selectedCallingCode = item.getStringValue();
         setCountry(country, true, true);
       }
+    } else if (viewId == R.id.btn_loginAuthKey) {
+      navigateTo(new AuthKeyController(context, tdlib));
     }
   }
 
