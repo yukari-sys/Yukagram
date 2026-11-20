@@ -320,7 +320,7 @@ public class DrawerHeaderView extends View implements Destroyable, GlobalAccount
       if (account.hasUserInfo()) {
         name = account.getName();
         if (Settings.instance().needHidePhoneNumber()) {
-          phone = "@" + account.getUsername();
+          phone = account.getUsername() != null ? ("@" + account.getUsername()) : null;
         } else {
           phone = Strings.formatPhone(account.getPhoneNumber());
         }
@@ -348,7 +348,7 @@ public class DrawerHeaderView extends View implements Destroyable, GlobalAccount
       }
       this.trimmedWidth = availWidth;
       this.trimmedName = new Text.Builder(name, availWidth, Paints.robotoStyleProvider(15), this).singleLine().allBold().build();
-      this.trimmedPhone = new Text.Builder(phone, availWidth, Paints.robotoStyleProvider(13), this).singleLine().allBold().build();
+      this.trimmedPhone = phone != null ? new Text.Builder(phone, availWidth, Paints.robotoStyleProvider(13), this).singleLine().allBold().build() : null;
     }
 
     private static final int FLAG_EQUAL_NUMBERS = 1;
@@ -358,7 +358,7 @@ public class DrawerHeaderView extends View implements Destroyable, GlobalAccount
 
     public void calculateDiff (DisplayInfo info) {
       int flags = 0;
-      if (StringUtils.equalsOrBothEmpty(info.phone, this.phone))
+      if ((phone != null && info.phone != null && StringUtils.equalsOrBothEmpty(info.phone, this.phone)) || (phone == null && info.phone == null))
         flags |= FLAG_EQUAL_NUMBERS;
       if (StringUtils.equalsOrBothEmpty(info.name, this.name))
         flags |= FLAG_EQUAL_NAMES;
@@ -436,11 +436,15 @@ public class DrawerHeaderView extends View implements Destroyable, GlobalAccount
       int leftPadding = view.getPaddingLeft();
       if (drawMode == DRAW_MODE_TEXTS || drawMode == DRAW_MODE_REGULAR) {
         this.lastAvatarFactor = avatarFactor;
-        if (trimmedName != null) {
-          trimmedName.draw(c, contentLeft + leftPadding, contentLeft + leftPadding + trimmedName.getWidth(), 0,  Screen.dp(97f) + HeaderView.getTopOffset(), null, (equalFlags & FLAG_EQUAL_NAMES) != 0 ? (drawEqual ? 1f : 0f) : factor);
-        }
         if (trimmedPhone != null) {
+          if (trimmedName != null) {
+            trimmedName.draw(c, contentLeft + leftPadding, contentLeft + leftPadding + trimmedName.getWidth(), 0,  Screen.dp(97f) + HeaderView.getTopOffset(), null, (equalFlags & FLAG_EQUAL_NAMES) != 0 ? (drawEqual ? 1f : 0f) : factor);
+          }
           trimmedPhone.draw(c, contentLeft + leftPadding, contentLeft + leftPadding + trimmedPhone.getWidth(), 0, Screen.dp(119f) + HeaderView.getTopOffset(), null, (equalFlags & FLAG_EQUAL_NUMBERS) != 0 ? (drawEqual ? 1f : 0f) : factor);
+        } else {
+          if (trimmedName != null) {
+            trimmedName.draw(c, contentLeft + leftPadding, contentLeft + leftPadding + trimmedName.getWidth(), 0,  Screen.dp(111f) + HeaderView.getTopOffset(), null, (equalFlags & FLAG_EQUAL_NAMES) != 0 ? (drawEqual ? 1f : 0f) : factor);
+          }
         }
         if (emojiStatusHelper != null) {
           emojiStatusHelper.draw(c, rtl ? Screen.dp(16 + 24 * 2) : viewWidth - Screen.dp(88), viewHeight - Screen.dp(18 + 24), (equalFlags & FLAG_EQUAL_STATUSES) != 0 ? (drawEqual ? 1f : 0f) : factor);
