@@ -82,8 +82,10 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
 
     items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.yu_Sidebar));
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
-    items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveArchiveToSidebar, 0, R.string.yu_MoveArchiveToSidebar));
-    items.add(new ListItem(ListItem.TYPE_SEPARATOR));
+    if (!YuSettings.Toggle.NewDialogsView.is()) {
+      items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveArchiveToSidebar, 0, R.string.yu_MoveArchiveToSidebar));
+      items.add(new ListItem(ListItem.TYPE_SEPARATOR));
+    }
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveCallsToSidebar, 0, R.string.yu_MoveCallsToSidebar));
     items.add(new ListItem(ListItem.TYPE_SEPARATOR));
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_hideSidebarButtonInviteFriends, 0, R.string.yu_HideSidebarButtonInviteFriends));
