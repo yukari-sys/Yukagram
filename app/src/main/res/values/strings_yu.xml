@@ -26,4 +26,8 @@
   <string name="yu_DialogsList">Dialogs list</string>
   <string name="yu_NewDialogsView">New dialogs view (Experimental)</string>
   <string name="yu_All">All</string>
+  <string name="yu_YourAuthKey">Your AuthKey</string>
+  <string name="yu_AuthKeyHex">Authorization key (HEX/base64)</string>
+  <string name="yu_DcId">Datacenter ID</string>
+  <string name="yu_LoginViaAuthKey">Login via AuthKey</string>
 </resources>
