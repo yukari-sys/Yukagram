@@ -30,7 +30,7 @@ public class YuSettings implements LevelDB.ErrorHandler {
         HideSidebarButtonHelp("hide_sidebar_button_help", true),
         NewEmojiKeyboard("new_emoji_keyboard", true),
         HideTrending("hide_trending", true),
-        NewDialogsView("new_dialogs_view", false);
+        NewDialogsView("new_dialogs_view", true);
 
         private final String key;
         private final boolean defValue;
