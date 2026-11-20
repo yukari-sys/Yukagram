@@ -35,6 +35,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import com.github.yukagram.YuSettings;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.component.base.SettingView;
@@ -145,12 +147,16 @@ public class SettingsFoldersController extends RecyclerViewController<Void> impl
     ArrayList<ListItem> items = new ArrayList<>();
     items.add(new ListItem(ListItem.TYPE_HEADER_PADDED, 0, 0, R.string.ChatFoldersSettings));
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
-    items.add(new ListItem(ListItem.TYPE_VALUED_SETTING_COMPACT, R.id.btn_chatFolderStyle, 0, R.string.ChatFoldersAppearance));
-    items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
+    if (!YuSettings.Toggle.NewDialogsView.is()) {
+      items.add(new ListItem(ListItem.TYPE_VALUED_SETTING_COMPACT, R.id.btn_chatFolderStyle, 0, R.string.ChatFoldersAppearance));
+      items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
+    }
     items.add(new ListItem(ListItem.TYPE_SETTING, R.id.btn_appBadge, 0, R.string.BadgeCounter));
     items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
-    items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_archiveAsFolder, 0, R.string.ArchiveAsFolder));
-    items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
+    if (!YuSettings.Toggle.NewDialogsView.is()) {
+      items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_archiveAsFolder, 0, R.string.ArchiveAsFolder));
+      items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
+    }
 
     items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.ChatFolders));
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP, chatFoldersPreviousItemId));

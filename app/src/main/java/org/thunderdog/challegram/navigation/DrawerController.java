@@ -289,7 +289,7 @@ public class DrawerController extends ViewController<Void> implements View.OnCli
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_calls, R.drawable.baseline_call_24, R.string.Calls));
     }
     items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_savedMessages, R.drawable.baseline_bookmark_24, R.string.SavedMessages));
-    if (YuSettings.Toggle.MoveArchiveToSidebar.is()) {
+    if (YuSettings.Toggle.MoveArchiveToSidebar.is() || YuSettings.Toggle.NewDialogsView.is()) {
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_archive, R.drawable.baseline_archive_24, R.string.ArchiveTitleList));
     }
     this.settingsClickBait = getSettingsClickBait();

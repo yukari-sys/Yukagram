@@ -50,7 +50,7 @@ import me.vkryl.core.MathUtils;
 
 public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListener<@NotNull Float> {
   private int currentSelectedIndex = 0;
-  private List<Button> buttons;
+  public List<Button> buttons;
   private LinearLayout linearLayout;
   private HorizontalScrollView scrollView;
   private DialogsController parent;

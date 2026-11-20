@@ -34,28 +34,17 @@ public final class FeatureAvailability {
   }
 
   /**
-   * Constants indicating in which version the specific feature became available,
-   * or {@link Integer.MAX_VALUE} if not yet released.
-   */
-  @Retention(RetentionPolicy.SOURCE)
-  public @interface ReleaseVersionCode {
-    int CHAT_FOLDERS = 1725;
-  }
-
-  /**
    * Compile-time constants to check if specific feature is available.
    */
   @Retention(RetentionPolicy.SOURCE)
   @SuppressWarnings("ConstantConditions")
   public @interface Released {
-    boolean CHAT_FOLDERS = BuildConfig.ORIGINAL_VERSION_CODE >= ReleaseVersionCode.CHAT_FOLDERS;
+    boolean CHAT_FOLDERS = true;
   }
 
   public static long recoverAvailableFeaturesForAppVersionCode (int versionCode) {
     @Feature long features = 0;
-    if (versionCode >= ReleaseVersionCode.CHAT_FOLDERS) {
-      features |= Feature.CHAT_FOLDERS;
-    }
+    features |= Feature.CHAT_FOLDERS;
     return features;
   }
 
