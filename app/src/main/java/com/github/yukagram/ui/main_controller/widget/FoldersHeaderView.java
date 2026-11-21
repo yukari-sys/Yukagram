@@ -295,11 +295,13 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
       int scrollLeft = scrollView.getScrollX();
       int scrollRight = scrollLeft + scrollView.getWidth();
 
+      int sex = Screen.dp(25);
+
       if (itemLeft < scrollLeft) {
-        scrollView.smoothScrollTo(itemLeft, 0);
+        scrollView.smoothScrollTo(Math.max(0, itemLeft - sex), 0);
       } else if (itemRight > scrollRight) {
         scrollView.smoothScrollTo(
-                itemRight - scrollView.getWidth(),
+                Math.min(scrollView.getWidth(), itemRight - scrollView.getWidth() + sex),
                 0
         );
       }
