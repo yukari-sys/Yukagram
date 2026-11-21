@@ -360,16 +360,16 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         return (int) Arrays.stream(folders).filter(o -> tdlib.settings().isChatFolderEnabled(o.id)).count();
     }
 
-    public String doINeedAHeader() {
-        if (visibleFoldersCount() == 0) {
-            header.setVisibility(View.GONE);
-            header.post(this::recalculatePaddings);
-            return "no, you don't";
-        } else {
-            header.setVisibility(View.VISIBLE);
-            header.post(this::recalculatePaddings);
-            return "yes, you do";
-        }
+    public void doINeedAHeader() {
+        tdlib.runOnUiThread(() -> {
+            if (visibleFoldersCount() == 0) {
+                header.setVisibility(View.GONE);
+                header.post(this::recalculatePaddings);
+            } else {
+                header.setVisibility(View.VISIBLE);
+                header.post(this::recalculatePaddings);
+            }
+        });
     }
 
     @Override
