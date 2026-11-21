@@ -86,7 +86,6 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public void fillHeader() {
-        header.currentSelectedIndex = pager == null ? 0 : pager.getCurrentItem();
         header.fillButtons(getArguments(), mainChatListPosition, folders);
         doINeedAHeader();
     }
@@ -327,7 +326,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
             ViewController<?> c = position < cachedItems.size() ? cachedItems.get(position) : null;
-            if (c == null) {
+            if (c == null || (c instanceof ChatsController h && h.chatList() != parent.getChatList(position))) {
                 c = parent.newChatsController(parent.getChatList(position));
                 while (position >= cachedItems.size()) {
                     cachedItems.add(null);
