@@ -1258,7 +1258,7 @@ public class TdlibSettingsManager implements CleanupStartupDelegate {
     }
   }
 
-  private IntSet disabledChatFolderIds () {
+  public IntSet disabledChatFolderIds() {
     if (_disabledChatFolderIds == null) {
       int[] disabledChatFolderIds = Settings.instance().getIntArray(key(DISABLED_CHAT_FILTER_IDS, tdlib.accountId()));
       _disabledChatFolderIds = disabledChatFolderIds != null ? new IntSet(disabledChatFolderIds) : new IntSet(0);

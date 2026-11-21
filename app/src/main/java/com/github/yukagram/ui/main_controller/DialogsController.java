@@ -32,6 +32,8 @@ import org.thunderdog.challegram.navigation.ViewPagerTopView;
 import org.thunderdog.challegram.telegram.ChatFolderStyle;
 import org.thunderdog.challegram.telegram.ChatFoldersListener;
 import org.thunderdog.challegram.telegram.Tdlib;
+import org.thunderdog.challegram.telegram.TdlibManager;
+import org.thunderdog.challegram.telegram.TdlibSettingsManager;
 import org.thunderdog.challegram.telegram.TdlibUi;
 import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
@@ -62,7 +64,9 @@ import tgx.td.ChatPosition;
 import tgx.td.Td;
 
 public class DialogsController extends ViewController<MainControllerV2> implements
-        OnPageChangeListener, ChatFoldersListener, View.OnLongClickListener, View.OnClickListener, Settings.ChatFolderSettingsListener {
+        OnPageChangeListener, ChatFoldersListener, View.OnLongClickListener, View.OnClickListener,
+        Settings.ChatFolderSettingsListener,
+        TdlibSettingsManager.ChatListPositionListener {
 
     private FrameLayoutFix container;
     private ViewPager pager;
@@ -74,10 +78,13 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
         Settings.instance().addChatFolderSettingsListener(this);
         tdlib.listeners().subscribeToChatFoldersUpdates(this);
+        tdlib.settings().addChatListPositionListener(this);
     }
 
     public void fillHeader() {
+        header.currentSelectedIndex = pager == null ? 0 : pager.getCurrentItem();
         header.fillButtons(getArguments(), mainChatListPosition, folders);
+        doINeedAHeader();
     }
 
     @Override
@@ -118,7 +125,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
             }
             {
                 FrameLayoutFix.LayoutParams params = FrameLayoutFix.newParams(pager.getLayoutParams());
-                params.topMargin = header.getMeasuredHeight() + addSomething;
+                params.topMargin = header.getVisibility() == View.VISIBLE ? (header.getMeasuredHeight() + addSomething) : addSomething;
                 pager.setLayoutParams(params);
             }
         });
@@ -150,11 +157,49 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public TdApi.ChatList getChatList(int position) {
+        return getChatList(position, null);
+    }
+
+    public TdApi.ChatList getChatList(int position, TdApi.ChatList dumb) {
         if (position == mainChatListPosition) {
             return ChatPosition.CHAT_LIST_MAIN;
         }
-        int i = position > mainChatListPosition ? position-1 : position;
-        return new TdApi.ChatListFolder(folders[i].id);
+        int x = position > mainChatListPosition ? position-1 : position;
+        for (int i = 0; i < folders.length; i++) {
+            TdApi.ChatListFolder f = new TdApi.ChatListFolder(folders[i].id);
+            if (Td.equalsTo(f, dumb) && x == i)
+                return f;
+            if (!tdlib.settings().isChatFolderEnabled(f.chatFolderId)) {
+                x++;
+                continue;
+            }
+            if (x == i)
+                return f;
+        }
+        return null;
+    }
+
+    private int indexOfChatList (TdApi.ChatList chatList) {
+        return indexOfChatList(chatList, false);
+    }
+
+    private int indexOfChatList (TdApi.ChatList chatList, boolean fumbduck) {
+        int fi = 0;
+        int e = 0;
+        for (int i = 0; i < folders.length + 1; i++) {
+            if (mainChatListPosition == i) {
+                if (Td.equalsTo(chatList, ChatPosition.CHAT_LIST_MAIN)) return i - e;
+            } else {
+                TdApi.ChatListFolder f = new TdApi.ChatListFolder(folders[fi++].id);
+                if (fumbduck && Td.equalsTo(chatList, f)) return i - e;
+                if (!tdlib.settings().isChatFolderEnabled(f.chatFolderId)) {
+                    e++;
+                    continue;
+                }
+                if (Td.equalsTo(chatList, f)) return i - e;
+            }
+        }
+        return -1;
     }
 
     private ChatsController newChatsController(TdApi.ChatList chatList) {
@@ -243,7 +288,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
         @Override
         public int getCount() {
-            return parent.folders.length + 1;
+            return parent.folders.length + 1 - parent.tdlib.settings().disabledChatFolderIds().size();
         }
 
         @Override
@@ -262,7 +307,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
                 }
                 cachedItems.set(position, c);
             }
-            container.addView(c.getValue(), position);
+            container.addView(c.getValue());
             return c;
         }
 
@@ -273,15 +318,13 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
         @Override
         public int getItemPosition(@NonNull Object object) {
-            return parent.indexOfChatList(((ChatsController) object).chatList());
+            int index =  parent.indexOfChatList(((ChatsController) object).chatList());
+            if (index == -1) return POSITION_NONE;
+            return index;
         }
     }
 
-    @Override
-    public void onChatFoldersChanged (TdApi.ChatFolderInfo[] chatFolders, int mainChatListPosition) {
-        this.folders = chatFolders;
-        this.mainChatListPosition = mainChatListPosition;
-
+    public void refreshWholeStuff() {
         tdlib.runOnUiThread(() -> {
             adapter.cachedItems.clear();
             adapter.notifyDataSetChanged();
@@ -292,6 +335,52 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
             recalculatePaddings();
         });
+    }
+
+    public int visibleFoldersCount() {
+        return (int) Arrays.stream(folders).filter(o -> !tdlib.settings().disabledChatFolderIds().has(o.id)).count();
+    }
+
+    public String doINeedAHeader() {
+        if (visibleFoldersCount() == 0) {
+            header.setVisibility(View.GONE);
+            header.post(this::recalculatePaddings);
+            return "no, you don't";
+        } else {
+            header.setVisibility(View.VISIBLE);
+            header.post(this::recalculatePaddings);
+            return "yes, you do";
+        }
+    }
+
+    @Override
+    public void onChatFoldersChanged (TdApi.ChatFolderInfo[] chatFolders, int mainChatListPosition) {
+        this.folders = chatFolders;
+        this.mainChatListPosition = mainChatListPosition;
+
+        doINeedAHeader();
+        refreshWholeStuff();
+    }
+
+    @Override
+    public void onChatListStateChanged (Tdlib tdlib, TdApi.ChatList chatList, boolean isEnabled) {
+        if (!isEnabled) {
+            int i = indexOfChatList(chatList, true);
+            header.removeButton(i);
+            if (header.currentSelectedIndex == i) {
+                header.currentSelectedIndex = header.currentSelectedIndex == 0 ? 0 : (header.currentSelectedIndex -1);
+                header.setSelectedIndex(header.currentSelectedIndex, false, false, true);
+            }
+            if (0 <= i && i < adapter.cachedItems.size())
+                adapter.cachedItems.remove(i);
+            adapter.notifyDataSetChanged();
+            if (pager.getCurrentItem() == i) {
+                pager.setCurrentItem(pager.getCurrentItem() == 0 ? 0 : (pager.getCurrentItem() -1));
+            }
+            doINeedAHeader();
+        } else {
+            refreshWholeStuff();
+        }
     }
 
     private void showChatListOptions (TdApi.ChatList chatList) {
@@ -357,6 +446,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
                 }));
             } else if (id == R.id.btn_hideFolder) {
                 tdlib.settings().setChatListEnabled(chatList, false);
+
                 if (header != null && !StringUtils.isEmptyOrBlank(title)) {
                     CharSequence text = TD.isChatListArchive(chatList) ?
                             Lang.getString(R.string.HideArchiveFolderInfo) :
@@ -605,17 +695,5 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
                 .show(tdlib, message)
                 .hideDelayed(3500, TimeUnit.MILLISECONDS);
         return true;
-    }
-
-    private int indexOfChatList (TdApi.ChatList chatList) {
-        int fi = 0;
-        for (int i = 0; i < folders.length + 1; i++) {
-            if (mainChatListPosition == i) {
-                if (Td.equalsTo(chatList, ChatPosition.CHAT_LIST_MAIN)) return i;
-            } else {
-                if (Td.equalsTo(chatList, new TdApi.ChatListFolder(folders[fi++].id))) return i;
-            }
-        }
-        return -1;
     }
 }
