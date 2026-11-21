@@ -9,7 +9,7 @@ import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.widget.TextView;
 
-public class StickersListController extends ViewController<Void> {
+public class StickersListController extends ViewController<EmojiKeyboardWrapped> {
 
     public StickersListController(@NonNull Context context, Tdlib tdlib) {
         super(context, tdlib);

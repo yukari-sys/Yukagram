@@ -9,7 +9,7 @@ import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.widget.TextView;
 
-public class GifListController extends ViewController<Void> {
+public class GifListController extends ViewController<EmojiKeyboardWrapped> {
 
     public GifListController(@NonNull Context context, Tdlib tdlib) {
         super(context, tdlib);

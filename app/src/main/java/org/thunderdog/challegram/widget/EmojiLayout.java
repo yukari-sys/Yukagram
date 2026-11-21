@@ -476,6 +476,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void onTextChanged (CharSequence charSequence) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.onTextChanged(charSequence);
+      return;
+    }
     if (pager.getCurrentItem() == 0) {
       setCircleVisible(charSequence.length() > 0, true, R.drawable.baseline_backspace_24, -Screen.dp(BACKSPACE_OFFSET));
     }
@@ -522,6 +526,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public int getCurrentItem () {
+    if (emojiKeyboard != null) return emojiKeyboard.getCurrentItem();
     return pager.getCurrentItem();
   }
 
@@ -885,6 +890,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setIgnoreMovement (boolean ignoreMovement) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setIgnoreMovement(ignoreMovement);
+      return;
+    }
     if (this.ignoreMovement != ignoreMovement) {
       this.ignoreMovement = ignoreMovement;
 
@@ -1395,6 +1404,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void moveHeader (int totalDy) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.moveHeader(totalDy);
+      return;
+    }
     moveHeaderImpl(totalDy);
   }
 

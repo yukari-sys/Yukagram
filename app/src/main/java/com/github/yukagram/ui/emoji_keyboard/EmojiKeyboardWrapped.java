@@ -29,7 +29,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
     private ViewController<?> themeProvider;
     private boolean useDarkMode;
     private boolean classicEmojiOnly;
-    private EmojiLayout parent;
+    protected EmojiLayout parent;
 
     private RtlViewPager pager;
     private Adapter adapter;
@@ -130,6 +130,21 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
 
     }
 
+    public int getCurrentItem() {
+        return pager.getCurrentItem();
+    }
+
+    public void moveHeader(int totalDy) {
+
+    }
+
+    public void onTextChanged(CharSequence charSequence) {
+        
+    }
+
+    public void setIgnoreMovement(boolean ignoreMovement) {
+    }
+
     public static class Adapter extends PagerAdapter {
         ViewController<?> context;
         EmojiKeyboardWrapped parent;
@@ -144,10 +159,10 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
             this.context = context;
             this.parent = parent;
 
-            cachedItems = new ViewController<?>[3];
+            cachedItems = new ViewController[3];
         }
 
-        public ViewController<?>[] cachedItems;
+        public ViewController<EmojiKeyboardWrapped>[] cachedItems;
 
         @Override
         public int getCount() {
@@ -157,13 +172,17 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            ViewController<?> c = cachedItems[position];
+            ViewController<EmojiKeyboardWrapped> c = cachedItems[position];
             if (c == null) {
                 switch (position) {
-                    case 0 -> c = new EmojiListController(container.getContext(), context.tdlib());
+                    case 0 -> c = new EmojiListController(container.getContext(), context.tdlib(), parent.classicEmojiOnly);
                     case 1 -> c = new GifListController(container.getContext(), context.tdlib());
                     case 2 -> c = new StickersListController(container.getContext(), context.tdlib());
+                    default -> {
+                        return null;
+                    }
                 }
+                c.setArguments(parent);
             }
             container.addView(c.getValue());
             return c;

@@ -9,17 +9,25 @@ import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.widget.TextView;
 
-public class EmojiListController extends ViewController<Void> {
+public class EmojiListController extends ViewController<EmojiKeyboardWrapped> {
 
-    public EmojiListController(@NonNull Context context, Tdlib tdlib) {
+    org.thunderdog.challegram.ui.EmojiListController thunderdogListController;
+
+    public EmojiListController(@NonNull Context context, Tdlib tdlib, boolean onlyClassicEmoji) {
+        thunderdogListController = new org.thunderdog.challegram.ui.EmojiListController(context, tdlib, onlyClassicEmoji);
         super(context, tdlib);
     }
 
     @Override
+    public void setArguments(EmojiKeyboardWrapped args) {
+        super.setArguments(args);
+
+        thunderdogListController.setArguments(args.parent);
+    }
+
+    @Override
     protected View onCreateView(Context context) {
-        TextView view = new TextView(context);
-        view.setText("o algo 1");
-        return view;
+        return thunderdogListController.getValue();
     }
 
     @Override
