@@ -46,7 +46,9 @@ import org.thunderdog.challegram.tool.Drawables;
 import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.Strings;
+import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.ui.EmojiStatusSelectorEmojiPage;
+import org.thunderdog.challegram.ui.ProfileController;
 import org.thunderdog.challegram.unsorted.Settings;
 import org.thunderdog.challegram.util.EmojiStatusHelper;
 import org.thunderdog.challegram.util.text.Text;
@@ -169,15 +171,23 @@ public class DrawerHeaderView extends View implements Destroyable, GlobalAccount
 
   @Override
   public boolean needClickAt (View view, float x, float y) {
-    return y >= getMeasuredHeight() - Screen.dp(54f);
+    return true;
   }
 
   @Override
   public void onClickAt (View view, float x, float y) {
-    if (y >= getMeasuredHeight() - Screen.dp(54f)) {
+    if (y >= getMeasuredHeight() - Screen.dp(54f) && x >= getMeasuredWidth() - Screen.dp(54f)) {
       ViewUtils.onClick(this);
       parent.setShowAccounts(expanderView.toggleExpanded());
+    } else {
+      openProfile();
     }
+  }
+
+  public void openProfile() {
+    ProfileController c = new ProfileController(getContext(), currentAccount.tdlib());
+    c.setArguments(new ProfileController.Args(currentAccount.tdlib().selfChat(), null, false));
+    UI.navigateTo(c);
   }
 
   private EmojiStatusHelper findActiveEmojiStatusHelper () {
