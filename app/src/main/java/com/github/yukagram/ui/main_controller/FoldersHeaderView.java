@@ -1,4 +1,4 @@
-package com.github.yukagram.ui.widget;
+package com.github.yukagram.ui.main_controller;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -16,8 +16,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
-
-import com.github.yukagram.ui.main_controller.DialogsController;
 
 import org.drinkless.tdlib.TdApi;
 import org.jetbrains.annotations.NotNull;

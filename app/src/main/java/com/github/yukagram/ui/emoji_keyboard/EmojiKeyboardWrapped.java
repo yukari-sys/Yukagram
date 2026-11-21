@@ -9,13 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.github.yukagram.ui.widget.EmojiBottomBarView;
-
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.navigation.ViewController;
-import org.thunderdog.challegram.telegram.EmojiMediaType;
-import org.thunderdog.challegram.ui.ChatsController;
 import org.thunderdog.challegram.unsorted.Settings;
 import org.thunderdog.challegram.widget.EmojiLayout;
 import org.thunderdog.challegram.widget.rtl.RtlViewPager;

@@ -1,4 +1,4 @@
-package com.github.yukagram.ui.widget;
+package com.github.yukagram.ui.emoji_keyboard;
 
 import android.content.Context;
 import android.graphics.Outline;
@@ -21,9 +21,7 @@ import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Fonts;
 import org.thunderdog.challegram.tool.Screen;
-import org.thunderdog.challegram.tool.Views;
 import org.thunderdog.challegram.widget.NoScrollTextView;
-import org.thunderdog.challegram.widget.ShadowView;
 
 import java.util.ArrayList;
 import java.util.List;
