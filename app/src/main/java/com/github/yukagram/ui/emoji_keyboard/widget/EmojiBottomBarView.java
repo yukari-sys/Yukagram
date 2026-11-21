@@ -41,6 +41,7 @@ import me.vkryl.android.animator.FactorAnimator;
 import me.vkryl.android.animatorx.AnimatorListener;
 import me.vkryl.android.animatorx.FloatAnimator;
 import me.vkryl.android.widget.FrameLayoutFix;
+import me.vkryl.core.ColorUtils;
 
 /*
 * Pill-alike bottom bar for emoji keyboard
@@ -80,6 +81,7 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
     );
 
     // what a schizo 🔥🔥🔥🙏🙏
+    int i = 0;
     for (int[] ids : new int[][] {
       {R.id.btn_tabEmojis,   R.string.yu_TabEmojis,   0,                  Screen.dp(2f), },
       {R.id.btn_tabGifs,     R.string.yu_TabGifs,     0,                  0,                  },
@@ -87,7 +89,7 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
     }) {
       Button title = new Button(getContext());
 
-      title.init(themeProvider);
+      title.init(themeProvider, i++ == currentSelectedIndex);
 
       title.setId(ids[0]);
       title.setText(ids[1]);
@@ -111,7 +113,7 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
       ViewGroup.LayoutParams.WRAP_CONTENT,
       Gravity.CENTER_HORIZONTAL | Gravity.FILL_VERTICAL
     );
-    layoutParams.setMargins(0, 0, 0, Screen.dp(5));
+    layoutParams.setMargins(0, 0, 0, Screen.dp(7));
 
     linearLayout.setOutlineProvider(new ViewOutlineProvider() {
       @Override
@@ -172,8 +174,7 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
   public void drawPill(Canvas canvas) {
     if (pillRect == null) pillRect = getButtonRect(currentSelectedIndex);
     Paint p = new Paint();
-    p.setColor(Theme.getColor(ColorId.circleButtonOverlay));
-//    canvas.drawRoundRect(0, 0, canvas.getWidth(), canvas.getHeight(), 15, 15, );
+    p.setColor(Theme.getColor(ColorId.filling));
     canvas.drawRoundRect(pillRect, Screen.dp(15), Screen.dp(15), p);
   }
 
@@ -196,6 +197,18 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
 
     pillRect = Yutils.rectFLerp(getButtonRect(floor), getButtonRect(ceiling), factor);
     linearLayout.postInvalidateOnAnimation();
+
+    for (int i = 0; i < buttons.size(); i++) {
+      Button b = buttons.get(i);
+
+      if (floor == i) {
+        b.update(1 - factor);
+      } else if (ceiling == i) {
+        b.update(factor);
+      } else {
+        b.update(0);
+      }
+    }
   }
 
   public static class Button extends NoScrollTextView {
@@ -203,16 +216,24 @@ public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator
       super(context);
     }
 
-    public void init(ViewController<?> themeProvider) {
+    public void init(ViewController<?> themeProvider, boolean selected) {
       setTypeface(Fonts.getRobotoMedium());
       setSingleLine();
       setGravity(Gravity.LEFT);
       setEllipsize(TextUtils.TruncateAt.END);
-      setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
+      setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
       setPadding(Screen.dp(10), Screen.dp(3), Screen.dp(10), Screen.dp(3));
 
-      setTextColor(Theme.getColor(ColorId.circleButtonOverlayIcon));
-      themeProvider.addOrUpdateThemeTextColorListener(this, ColorId.circleButtonOverlayIcon);
+      setTextColor(Theme.getColor(selected ? ColorId.fillingActiveContent : ColorId.background_text));
+      themeProvider.addOrUpdateThemeTextColorListener(this, selected ? ColorId.fillingActiveContent : ColorId.background_text);
+    }
+
+    public void update(float factor) {
+      setTextColor(ColorUtils.fromToArgb(
+        Theme.getColor(ColorId.background_text),
+        Theme.getColor(ColorId.fillingActiveContent),
+        factor
+      ));
     }
   }
 }
