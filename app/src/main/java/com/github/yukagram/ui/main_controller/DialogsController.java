@@ -317,11 +317,6 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
             return parent.folders.length + 1 - (int)Arrays.stream(parent.folders).filter(o -> !parent.tdlib.settings().isChatFolderEnabled(o.id)).count();
         }
 
-        @Override
-        public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-            return object instanceof ViewController<?> c && c.getValue() == view;
-        }
-
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
@@ -340,6 +335,11 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             container.removeView(((ViewController<?>)object).getValue());
+        }
+
+        @Override
+        public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+            return object instanceof ViewController<?> c && c.getValue() == view;
         }
 
         @Override

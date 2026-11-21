@@ -29,6 +29,9 @@ import androidx.collection.SparseArrayCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager.widget.PagerAdapter;
 
+import com.github.yukagram.YuSettings;
+import com.github.yukagram.ui.emoji_keyboard.EmojiKeyboardWrapped;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.component.chat.EmojiToneHelper;
@@ -290,6 +293,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     return emojiSectionsSize;
   }
 
+  public EmojiKeyboardWrapped emojiKeyboard = null;
+
   public void initWithMediasEnabled (ViewController<?> context, boolean allowMedia, boolean animatedEmojiOnly, @NonNull Listener listener, @Nullable ViewController<?> themeProvider, boolean useDarkMode, boolean classicEmojiOnly) {
     this.parentController = context;
     this.listener = listener;
@@ -298,6 +303,12 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     this.animatedEmojiOnly = animatedEmojiOnly;
     this.classicEmojiOnly = classicEmojiOnly;
     this.useDarkMode = useDarkMode;
+
+    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
+      this.emojiKeyboard = new EmojiKeyboardWrapped();
+      this.emojiKeyboard.init(context, allowMedia, animatedEmojiOnly, listener, themeProvider, useDarkMode, classicEmojiOnly, this);
+      return;
+    }
 
     emojiSectionsSize = 7 + (allowMedia ? 1 : 0);
 
@@ -438,6 +449,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       this.emojiHeaderView.setAllowMedia(allowMedia);
       this.adapter.allowMedia = allowMedia;
       this.adapter.notifyDataSetChanged();
+
+      if (emojiKeyboard != null) emojiKeyboard.setAllowMedia(allowMedia);
     }
   }
 
@@ -452,6 +465,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   public void setAllowPremiumFeatures (boolean allowPremiumFeatures) {
     this.allowPremiumFeatures = allowPremiumFeatures;
     checkAllowPremiumFeatures();
+
+    if (emojiKeyboard != null) emojiKeyboard.setAllowPremiumFeatures(allowPremiumFeatures);
   }
 
   private void checkAllowPremiumFeatures () {
@@ -1158,6 +1173,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     } else {
       super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
+    if (emojiKeyboard != null) return;
     checkWidth(getMeasuredWidth());
   }
 
@@ -1186,6 +1202,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public @EmojiMediaType int getCurrentEmojiSection () {
+    if (emojiKeyboard != null) return emojiKeyboard.getCurrentEmojiSection();
     if (allowMedia) {
       int currentItem = pager.getCurrentItem();
       if (currentItem == 1) {
