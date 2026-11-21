@@ -1,5 +1,7 @@
 package com.github.yukagram.ui.main_controller;
 
+import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_DRAGGING;
+
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -56,7 +58,9 @@ import org.thunderdog.challegram.widget.rtl.RtlViewPager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import me.vkryl.android.widget.FrameLayoutFix;
 import me.vkryl.core.StringUtils;
@@ -100,6 +104,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         pager.setOverScrollMode(Config.HAS_NICE_OVER_SCROLL_EFFECT ? View.OVER_SCROLL_IF_CONTENT_SCROLLS :View.OVER_SCROLL_NEVER);
         pager.addOnPageChangeListener(this);
         pager.setAdapter(adapter);
+        pager.setCurrentItem(mainChatListPosition);
 
         container = new FrameLayoutFix(context);
         container.setLayoutParams(FrameLayoutFix.newParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -149,11 +154,17 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public ChatsController getCurrentChatsController() {
-        return getChatsController(pager.getCurrentItem());
+        return (ChatsController) adapter.cachedItems.get(pager.getCurrentItem());
     }
 
     public ChatsController getChatsController(int position) {
-        return (ChatsController) adapter.cachedItems.get(position);
+        ChatsController c = (ChatsController) adapter.cachedItems.get(position);
+        if (c == null) {
+            TdApi.ChatList ch = getChatList(position);
+            if (ch != null)
+                return (ChatsController) adapter.instantiateItem(pager, position);
+        }
+        return null;
     }
 
     public TdApi.ChatList getChatList(int position) {
@@ -173,6 +184,19 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
                 x++;
                 continue;
             }
+            if (x == i)
+                return f;
+        }
+        return null;
+    }
+
+    public TdApi.ChatList dumbGetChatList(int position) {
+        if (position == mainChatListPosition) {
+            return ChatPosition.CHAT_LIST_MAIN;
+        }
+        int x = position > mainChatListPosition ? position-1 : position;
+        for (int i = 0; i < folders.length; i++) {
+            TdApi.ChatListFolder f = new TdApi.ChatListFolder(folders[i].id);
             if (x == i)
                 return f;
         }
@@ -230,6 +254,13 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         header.setSelectedIndex(position, false, true);
     }
 
+    boolean allowClickTabs = true;
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+        allowClickTabs = state != SCROLL_STATE_DRAGGING;
+    }
+
     int playerOffset = 0;
 
     @Override
@@ -237,11 +268,6 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
         playerOffset = (int)(top * factor);
         recalculatePaddings();
         return super.applyPlayerOffset(factor, top);
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
     }
 
     private int mainChatListPosition;
@@ -255,7 +281,8 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     @Override
     public void onClick(View v) {
         if (v instanceof FoldersHeaderView.Button) {
-            int position = v.getId();
+            int position = indexOfChatList(dumbGetChatList(v.getId()));
+            if (!allowClickTabs) return;
             header.setSelectedIndex(position, true);
             header.animationStart = pager.getCurrentItem();
             header.animationEnd = position;
@@ -269,7 +296,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     public boolean onLongClick(View v) {
         if (v instanceof FoldersHeaderView.Button) {
             int position = v.getId();
-            showChatListOptions(getChatList(position));
+            showChatListOptions(dumbGetChatList(position));
         }
         return true;
     }
@@ -288,7 +315,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
         @Override
         public int getCount() {
-            return parent.folders.length + 1 - parent.tdlib.settings().disabledChatFolderIds().size();
+            return parent.folders.length + 1 - (int)Arrays.stream(parent.folders).filter(o -> !parent.tdlib.settings().isChatFolderEnabled(o.id)).count();
         }
 
         @Override
@@ -318,7 +345,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
         @Override
         public int getItemPosition(@NonNull Object object) {
-            int index =  parent.indexOfChatList(((ChatsController) object).chatList());
+            int index = parent.indexOfChatList(((ChatsController) object).chatList());
             if (index == -1) return POSITION_NONE;
             return index;
         }
@@ -326,7 +353,6 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
 
     public void refreshWholeStuff() {
         tdlib.runOnUiThread(() -> {
-            adapter.cachedItems.clear();
             adapter.notifyDataSetChanged();
 
             header.clear();
@@ -338,7 +364,7 @@ public class DialogsController extends ViewController<MainControllerV2> implemen
     }
 
     public int visibleFoldersCount() {
-        return (int) Arrays.stream(folders).filter(o -> !tdlib.settings().disabledChatFolderIds().has(o.id)).count();
+        return (int) Arrays.stream(folders).filter(o -> tdlib.settings().isChatFolderEnabled(o.id)).count();
     }
 
     public String doINeedAHeader() {

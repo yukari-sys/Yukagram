@@ -54,7 +54,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
   private LinearLayout linearLayout;
   private HorizontalScrollView scrollView;
   private DialogsController parent;
-  private FloatAnimator animator;
+  public FloatAnimator animator;
 
   public FoldersHeaderView(@NonNull Context context) {
     super(context);
@@ -206,8 +206,9 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
         addButton(themeProvider, i++, folder, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
       }
       if (parent.tdlib().settings().isChatFolderEnabled(folder.id)) {
-        addButton(themeProvider, i++, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
+        addButton(themeProvider, i, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
       }
+      i++;
     }
 
     if (!buttons.isEmpty()) {
