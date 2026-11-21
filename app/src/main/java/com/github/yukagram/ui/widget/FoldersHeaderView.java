@@ -49,7 +49,7 @@ import me.vkryl.core.MathUtils;
 */
 
 public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListener<@NotNull Float> {
-  private int currentSelectedIndex = 0;
+  public int currentSelectedIndex = 0;
   public List<Button> buttons;
   private LinearLayout linearLayout;
   private HorizontalScrollView scrollView;
@@ -205,7 +205,9 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
       if (i == mainChatListPosition) {
         addButton(themeProvider, i++, folder, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
       }
-      addButton(themeProvider, i++, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
+      if (parent.tdlib().settings().isChatFolderEnabled(folder.id)) {
+        addButton(themeProvider, i++, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
+      }
     }
 
     if (!buttons.isEmpty()) {
@@ -255,7 +257,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
   }
 
   public void setSelectedIndex (int index, boolean animate) {
-    setSelectedIndex(index, animate, false);
+    setSelectedIndex(index, animate, false, false);
   }
 
   /**
@@ -267,17 +269,24 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
    * Co-Authored-By: Chatgipiti Asstra
    */
   public void setSelectedIndex (int index, boolean animate, boolean nigga) {
-    if (index == currentSelectedIndex) {
+    setSelectedIndex(index, animate, nigga, false);
+  }
+
+  /**
+   * INTRODUCING NEW EXTRA PARAMETER: **NIGGA_2.0**
+   */
+  public void setSelectedIndex (int index, boolean animate, boolean nigga, boolean nigga2) {
+    if (index == currentSelectedIndex && !nigga2) {
       return;
     }
 
     if (animate) animatedScrollTo(currentSelectedIndex, index);
     else if (!nigga) scrollTo(currentSelectedIndex, index, 1);
 
+    buttons.get(currentSelectedIndex).getAnimator().setValue(false, true);
+
     Button b = buttons.get(index);
     b.getAnimator().setValue(true, true);
-
-    buttons.get(currentSelectedIndex).getAnimator().setValue(false, true);
 
     currentSelectedIndex = index;
 
