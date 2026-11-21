@@ -219,7 +219,7 @@ public class TdlibAccount implements Comparable<TdlibAccount>, TdlibProvider {
     return false;
   }
 
-  boolean isLoggingOut () {
+  public boolean isLoggingOut() {
     return BitwiseUtils.hasFlag(flags, FLAG_LOGGING_OUT);
   }
 

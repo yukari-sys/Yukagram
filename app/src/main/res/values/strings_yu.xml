@@ -30,4 +30,13 @@
   <string name="yu_AuthKeyHex">Authorization key (HEX/base64)</string>
   <string name="yu_DcId">Datacenter ID</string>
   <string name="yu_LoginViaAuthKey">Login via AuthKey</string>
+  <string name="yu_ErrorAuthKey256Bytes">Auth key must be exactly 256 bytes</string>
+  <string name="yu_ErrorDCBetween1and5">DC id must be between 1 and 5</string>
+  <string name="yu_ErrorTooManyAccounts">Too many accounts</string>
+  <string name="yu_WtfAreYouDoingMan">Wtf are you doing man</string>
+  <string name="yu_ErrorAuthKeyLoginFailed">Auth key login failed</string>
+  <string name="yu_LoggedInWithAuthKey">Logged in with auth key</string>
+  <string name="yu_ErrorInvalidDcId">Invalid DC id</string>
+  <string name="yu_ErrorInvalidAuthKey">Invalid auth key</string>
+  <string name="yu_ErrorPendingAccount">Another pending account is already running, finish it first</string>
 </resources>

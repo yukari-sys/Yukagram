@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.SystemClock;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,9 +18,7 @@ import org.thunderdog.challegram.telegram.TdlibManager;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.ui.EditBaseController;
 import org.thunderdog.challegram.ui.ListItem;
-import org.thunderdog.challegram.ui.RecyclerViewController;
 import org.thunderdog.challegram.ui.SettingsAdapter;
-import org.thunderdog.challegram.v.CustomRecyclerView;
 import org.thunderdog.challegram.widget.MaterialEditTextGroup;
 
 import java.io.File;
@@ -40,7 +36,7 @@ import java.util.zip.CRC32;
 
 import me.vkryl.android.widget.FrameLayoutFix;
 
-public class AuthKeyController extends EditBaseController<Void> {
+public class AuthKeyController extends EditBaseController<Void> implements SettingsAdapter.TextChangeListener {
   private static final String TAG = "AuthKeyImport";
 
   public AuthKeyController (Context context, Tdlib tdlib) {
@@ -52,6 +48,11 @@ public class AuthKeyController extends EditBaseController<Void> {
     return R.id.controller_authkeyLogin;
   }
 
+  @Override
+  public CharSequence getName () {
+    return Lang.getString(R.string.yu_YourAuthKey);
+  }
+
   private SettingsAdapter adapter;
   private ListItem keyInput;
   private ListItem dcInput;
@@ -60,9 +61,10 @@ public class AuthKeyController extends EditBaseController<Void> {
   @Override
   protected void onCreateView(Context context, FrameLayoutFix contentView, RecyclerView recyclerView) {
     setDoneIcon(R.drawable.baseline_arrow_forward_24);
-    setDoneVisible(true);
+    setDoneVisible(false);
 
     this.adapter = new SettingsAdapter(this);
+    adapter.setTextChangeListener(this);
 
     List<ListItem> items = adapter.getItems();
 
@@ -72,6 +74,11 @@ public class AuthKeyController extends EditBaseController<Void> {
     items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
 
     recyclerView.setAdapter(adapter);
+  }
+
+  @Override
+  public void onTextChanged (int id, ListItem item, MaterialEditTextGroup v) {
+    setDoneVisible(!keyInput.getStringValue().isEmpty() && !dcInput.getStringValue().isEmpty());
   }
 
   @Override
@@ -85,19 +92,25 @@ public class AuthKeyController extends EditBaseController<Void> {
     try {
       dcId = Integer.parseInt(dcInput != null ? dcInput.getStringValue().trim() : "");
     } catch (NumberFormatException e) {
-      UI.showToast("Invalid DC id", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorInvalidDcId, Toast.LENGTH_SHORT);
       return false;
     }
     byte[] authKey;
     try {
       authKey = decodeKey(input);
     } catch (IllegalArgumentException e) {
-      UI.showToast("Invalid auth key: " + e.getMessage(), Toast.LENGTH_SHORT);
+      UI.showToast(Lang.getString(R.string.yu_ErrorInvalidAuthKey) + ": " + e.getMessage(), Toast.LENGTH_SHORT);
       return false;
     }
     makeRequest(authKey, dcId);
     return true;
   }
+
+  /*
+  *
+  * Verified as an OK code at  21 Nov 2026 (12:12:20) by Yukari
+  *
+  * */
 
   /**
    * Imports a raw 256-byte MTProto auth key as a new account.
@@ -111,11 +124,11 @@ public class AuthKeyController extends EditBaseController<Void> {
    */
   public void makeRequest (byte[] authKey, int dcId) {
     if (authKey == null || authKey.length != 256) {
-      UI.showToast("Auth key must be exactly 256 bytes", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorAuthKey256Bytes, Toast.LENGTH_SHORT);
       return;
     }
     if (dcId < 1 || dcId > 5) {
-      UI.showToast("DC id must be between 1 and 5", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorDCBetween1and5, Toast.LENGTH_SHORT);
       return;
     }
     if (inProgress) {
@@ -137,19 +150,19 @@ public class AuthKeyController extends EditBaseController<Void> {
     while (manager.hasAccount(accountsCount)) {
       TdlibAccount account = manager.account(accountsCount);
       accountsCount++;
-      if (account.id != currentId && account.isUnauthorized() && !isLoggingOut(account) && account.tdlibInstanceMode() != Tdlib.Mode.SERVICE) {
+      if (account.id != currentId && account.isUnauthorized() && !account.isLoggingOut() && account.tdlibInstanceMode() != Tdlib.Mode.SERVICE) {
         reusableId = account.id; // newAccount returns the first match in list order
         break;
       }
     }
     final int targetId = reusableId != TdlibAccount.NO_ID ? reusableId : accountsCount;
     if (targetId >= TdlibAccount.ID_MAX) {
-      UI.showToast("Too many accounts", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorTooManyAccounts, Toast.LENGTH_SHORT);
       return;
     }
     if (reusableId != TdlibAccount.NO_ID && manager.account(reusableId).hasTdlib(false)) {
       // That account's TDLib already has td.binlog open - can't safely rewrite it.
-      UI.showToast("Another pending account is already running, finish it first", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorPendingAccount, Toast.LENGTH_SHORT);
       return;
     }
 
@@ -161,7 +174,7 @@ public class AuthKeyController extends EditBaseController<Void> {
       }
       writeBinlog(binlog, dcId, authKey);
     } catch (Throwable t) {
-      UI.showToast("Failed to write auth key: " + t.getMessage(), Toast.LENGTH_SHORT);
+      UI.showToast(Lang.getString(R.string.yu_ErrorAuthKeyLoginFailed) + ": " + t.getMessage(), Toast.LENGTH_SHORT);
       return;
     }
 
@@ -176,7 +189,7 @@ public class AuthKeyController extends EditBaseController<Void> {
       // records so no account boots from them by accident.
       //noinspection ResultOfMethodCallIgnored
       binlog.delete();
-      UI.showToast("Could not create account for the auth key", Toast.LENGTH_SHORT);
+      UI.showToast(R.string.yu_ErrorAuthKeyLoginFailed, Toast.LENGTH_SHORT);
       return;
     }
 
@@ -230,7 +243,7 @@ public class AuthKeyController extends EditBaseController<Void> {
               // than switching slightly early.
               success[0] = true;
               Log.i(TAG, "import confirmed (sawNotReady=" + sawNotReady[0] + ", " + (elapsed - restartAt[0]) + "ms after restart)");
-              UI.showToast("Logged in with auth key", Toast.LENGTH_SHORT);
+              UI.showToast(R.string.yu_LoggedInWithAuthKey, Toast.LENGTH_SHORT);
             } else if (elapsed - restartAt[0] >= 25_000 && !healthy) {
               Log.w(TAG, "post-restart timeout: state=" + state + " myUserId=" + myUserId);
               rollbackImport(target, binlog, "restart did not complete");
@@ -250,8 +263,7 @@ public class AuthKeyController extends EditBaseController<Void> {
           }
           // changePreferredAccountId rejects accounts that are still flagged
           // unauthorized; the flag flips right after Ready, so retry briefly
-          target.context().changePreferredAccountId(target.id(), TdlibManager.SWITCH_REASON_USER_CLICK, ok -> {
-          });
+          target.context().changePreferredAccountId(target.id(), TdlibManager.SWITCH_REASON_USER_CLICK, _ -> {});
         }
         UI.post(this, restarted[0] ? 75 : 100);
       }
@@ -261,7 +273,7 @@ public class AuthKeyController extends EditBaseController<Void> {
   private void rollbackImport (Tdlib target, File binlog, String reason) {
     Log.w(TAG, "rolling back import: " + reason);
     inProgress = false;
-    UI.showToast("Auth key login failed", Toast.LENGTH_SHORT);
+    UI.showToast(R.string.yu_ErrorAuthKeyLoginFailed, Toast.LENGTH_SHORT);
     try {
       //noinspection ResultOfMethodCallIgnored
       binlog.delete();
@@ -274,27 +286,6 @@ public class AuthKeyController extends EditBaseController<Void> {
     }
   }
 
-  /** TdlibAccount.isLoggingOut() is package-private; newAccount skips such accounts. */
-  private static boolean isLoggingOut (TdlibAccount account) {
-    try {
-      java.lang.reflect.Method method = IS_LOGGING_OUT_METHOD;
-      if (method == null) {
-        method = TdlibAccount.class.getDeclaredMethod("isLoggingOut");
-        method.setAccessible(true);
-        IS_LOGGING_OUT_METHOD = method;
-      }
-      return (Boolean) method.invoke(account);
-    } catch (Throwable t) {
-      return false;
-    }
-  }
-
-  private static java.lang.reflect.Method IS_LOGGING_OUT_METHOD;
-
-  @Override
-  public CharSequence getName () {
-    return Lang.getString(R.string.yu_YourAuthKey);
-  }
 
   // Binlog forging, coupled to TDLib v1.8.68 (tdlib/builder/td @ c15d3f5a)
 
