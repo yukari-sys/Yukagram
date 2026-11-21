@@ -201,12 +201,13 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
   public void fillButtons(ViewController<?> themeProvider, int mainChatListPosition, TdApi.ChatFolderInfo[] folders) {
     int i = 0;
+    int ri = 0;
     for (TdApi.ChatFolderInfo folder : folders) {
       if (i == mainChatListPosition) {
-        addButton(themeProvider, i++, folder, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
+        addButton(themeProvider, i++, ri++, folder, Lang.getString(R.string.yu_All), R.drawable.baseline_forum_24);
       }
       if (parent.tdlib().settings().isChatFolderEnabled(folder.id)) {
-        addButton(themeProvider, i, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
+        addButton(themeProvider, i, ri++, folder, folder.name.text.text, TD.findFolderIcon(folder.icon, R.drawable.baseline_folder_24));
       }
       i++;
     }
@@ -217,7 +218,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     }
   }
 
-  public void addButton(ViewController<?> themeProvider, int index, TdApi.ChatFolderInfo folderInfo, String folderName, int iconId) {
+  public void addButton(ViewController<?> themeProvider, int index, int real_index, TdApi.ChatFolderInfo folderInfo, String folderName, int iconId) {
     LayoutParams params = FrameLayoutFix.newParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -226,7 +227,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     params.setMargins(index != 0 ? Screen.dp(3f) : 0, 0, 0, 0);
 
     Button title = new Button(getContext());
-    title.init(themeProvider, currentSelectedIndex == index);
+    title.init(themeProvider, currentSelectedIndex == real_index);
     title.setId(index);
     title.textView.setText(folderName);
     title.iconView.setImageResource(iconId);
