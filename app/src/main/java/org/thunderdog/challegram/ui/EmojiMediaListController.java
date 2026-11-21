@@ -30,8 +30,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListUpdateCallback;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.yukagram.YuSettings;
-
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
@@ -88,29 +86,12 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   private final EmojiLayoutRecyclerController stickersController;
   private final EmojiLayoutTrendingController trendingSetsController;
 
-  private boolean isGif;
-
-  public EmojiMediaListController (Context context, Tdlib tdlib, boolean isGif) {
+  public EmojiMediaListController (Context context, Tdlib tdlib) {
     super(context, tdlib);
-    this.isGif = isGif;
     stickersController = new EmojiLayoutRecyclerController(context, tdlib, EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID);
     trendingSetsController = new EmojiLayoutTrendingController(context, tdlib, EmojiLayout.STICKERS_TRENDING_CONTROLLER_ID);
     trendingSetsController.setCallbacks(stickerSetsDataProvider(), new TdApi.StickerTypeRegular());
     trendingSetsController.stickerSets = new ArrayList<>();
-  }
-
-  private boolean loadedGifs = false;
-  private boolean loadedStickers = false;
-
-  public void updateIsGif(boolean newValue) {
-    if (isGif == newValue) return;
-
-    isGif = newValue;
-
-    if (!isGif && !loadedStickers) loadStickers();
-    if (isGif && !loadedGifs) loadGIFs();
-
-    contentView.changeSection(isGif ? SECTION_GIFS : SECTION_STICKERS, false, -1);
   }
 
   private TGStickerObj focusStickerObj;
@@ -286,10 +267,6 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
     checkSpanCount();
 
     int currentSection = Settings.instance().getEmojiMediaSection();
-
-    if (YuSettings.Toggle.NewEmojiKeyboard.is())
-      currentSection = isGif ? SECTION_GIFS : SECTION_STICKERS;
-
     switch (currentSection) {
       case EmojiMediaType.STICKER: {
         this.contentView.init(SECTION_STICKERS);
@@ -456,11 +433,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
         @Override
         public void getItemOffsets (@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
           int position = parent.getChildAdapterPosition(view);
-          if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-            outRect.top = manager.isFirstRow(position) ? Screen.dp(4f) : 0;
-          } else {
-            outRect.top = manager.isFirstRow(position) ? Screen.dp(4f) + EmojiLayout.getHeaderSize() : 0;
-          }
+          outRect.top = manager.isFirstRow(position) ? Screen.dp(4f) + EmojiLayout.getHeaderSize() : 0;
           outRect.right = manager.isLastInRow(position) ? 0 : Screen.dp(3f);
           outRect.bottom = Screen.dp(3f);
         }
@@ -470,11 +443,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   }
 
   public float getDesiredHeaderHideFactor () {
-    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-      return contentView.getCurrentSection() == SECTION_GIFS ? 1f : 0f;
-    } else {
-      return contentView.getCurrentSection() == SECTION_GIFS ? Math.clamp((float) getGIFsScrollY() / (float) EmojiLayout.getHeaderSize(), 0f, 1f) : 0f;
-    }
+    return contentView.getCurrentSection() == SECTION_GIFS ? Math.min(1f, Math.max(0f, (float) getGIFsScrollY() / (float) EmojiLayout.getHeaderSize())) : 0f;
   }
 
   @Override
@@ -1424,8 +1393,6 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   private boolean loadingStickers;
 
   private void loadStickers () {
-    loadedStickers = true;
-
     if (!loadingStickers) {
       loadingStickers = true;
       loadingRecentStickers = false;
@@ -1490,8 +1457,6 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   private ArrayList<TGGif> gifs;
 
   private void loadGIFs () {
-    loadedGifs = true;
-
     if (!loadingGIFs) {
       loadingGIFs = true;
       tdlib.client().send(new TdApi.GetSavedAnimations(), result -> {
@@ -1520,9 +1485,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
     this.loadingGIFs = false;
     this.gifs = gifs;
     gifsAdapter.setGIFs(gifs);
-    if (YuSettings.Toggle.NewEmojiKeyboard.is())  {
-      getArguments().setHasGifs(!gifs.isEmpty());
-    } else if (gifs.isEmpty() && contentView.getCurrentSection() == SECTION_GIFS) {
+    if (gifs.isEmpty() && contentView.getCurrentSection() == SECTION_GIFS) {
       showStickers();
     }
     tdlib.listeners().subscribeForAnimationsUpdates(this);

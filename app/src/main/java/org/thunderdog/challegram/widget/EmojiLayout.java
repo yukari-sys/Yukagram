@@ -29,9 +29,6 @@ import androidx.collection.SparseArrayCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager.widget.PagerAdapter;
 
-import com.github.yukagram.YuSettings;
-import com.github.yukagram.ui.widget.EmojiBottomBarView;
-
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.component.chat.EmojiToneHelper;
@@ -63,14 +60,12 @@ import org.thunderdog.challegram.widget.emoji.section.StickerSectionView;
 import org.thunderdog.challegram.widget.rtl.RtlViewPager;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import me.vkryl.android.AnimatorUtils;
 import me.vkryl.android.animator.FactorAnimator;
 import me.vkryl.android.widget.FrameLayoutFix;
 
 public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChangeListener, FactorAnimator.Target, View.OnClickListener, Lang.Listener, EmojiLayoutRecyclerController.Callback {
-
   public interface Listener {
     default void onEnterEmoji (String emoji) {}
     default void onEnterCustomEmoji (TGStickerObj sticker) {}
@@ -119,13 +114,12 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   private ShadowView shadowView;
   private @Nullable EmojiHeaderView emojiHeaderView;
-  private @Nullable MediaHeaderView gifSectionsView;
-  private @Nullable MediaHeaderView stickersSectionsView;
+  private @Nullable MediaHeaderView mediaSectionsView;
 
   private int emojiSectionsSize = 0;
 
   public void clearRecentStickers () {
-    if (themeProvider != null && stickersSectionsView.hasRecents()) {
+    if (themeProvider != null && mediaSectionsView.hasRecents()) {
       themeProvider.showOptions(null, new int[] {R.id.btn_done, R.id.btn_cancel}, new String[] {
         Lang.getString(animatedEmojiOnly ? R.string.ClearRecentEmojiStatuses : R.string.ClearRecentStickers),
         Lang.getString(R.string.Cancel)
@@ -140,7 +134,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
             parentController.tdlib().send(new TdApi.ClearRecentEmojiStatuses(), parentController.tdlib().typedOkHandler());
             return true;
           }
-          ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+          ViewController<?> c = adapter.getCachedItem(1);
           if (c != null) {
             ((EmojiMediaListController) c).removeRecentStickers();
           }
@@ -264,8 +258,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   private boolean allowPremiumFeatures;
   private boolean useDarkMode;
 
-  private EmojiBottomBarView bottomBarView;
-
   public EmojiToneHelper.Delegate getToneDelegate () {
     return parentController != null && parentController instanceof EmojiToneHelper.Delegate ? (EmojiToneHelper.Delegate) parentController : null;
   }
@@ -298,38 +290,16 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     return emojiSectionsSize;
   }
 
-  private boolean hasGifs = false;
-
-  public void setHasGifs(boolean value) {
-    hasGifs = value;
-
-    if (bottomBarView != null) {
-      bottomBarView.setHasGifs(value);
-      int position = pager.getCurrentItem();
-      bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2,2}[position]);
-    }
-    updatePositions();
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && adapter != null) {
-      adapter.updateGifSection();
-    }
-  }
-
-  public boolean isHasGifs() {
-    return hasGifs;
-  }
-
   public void initWithMediasEnabled (ViewController<?> context, boolean allowMedia, boolean animatedEmojiOnly, @NonNull Listener listener, @Nullable ViewController<?> themeProvider, boolean useDarkMode, boolean classicEmojiOnly) {
     this.parentController = context;
     this.listener = listener;
     this.themeProvider = themeProvider;
     this.allowMedia = allowMedia && !animatedEmojiOnly;
     this.animatedEmojiOnly = animatedEmojiOnly;
-//    this.allowMedia = false;
     this.classicEmojiOnly = classicEmojiOnly;
     this.useDarkMode = useDarkMode;
-    this.hasGifs = false;
 
-    emojiSectionsSize = 7 + (allowMedia ? (YuSettings.Toggle.NewEmojiKeyboard.is() ? 2 : 1) : 0);
+    emojiSectionsSize = 7 + (allowMedia ? 1 : 0);
 
     adapter = new Adapter(context, this, allowMedia, themeProvider);
     pager = new RtlViewPager(getContext());
@@ -357,8 +327,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     if (!animatedEmojiOnly) {
       ArrayList<EmojiSection> emojiSections = new ArrayList<>(2);
-      if (!YuSettings.Toggle.HideTrending.is())
-        emojiSections.add(new EmojiSection(this, EmojiSection.SECTION_EMOJI_TRENDING, R.drawable.outline_whatshot_24, R.drawable.baseline_whatshot_24).setMakeFirstTransparent());
+      emojiSections.add(new EmojiSection(this, EmojiSection.SECTION_EMOJI_TRENDING, R.drawable.outline_whatshot_24, R.drawable.baseline_whatshot_24).setMakeFirstTransparent());
       emojiSections.add(new EmojiSection(this, EmojiSection.SECTION_EMOJI_RECENT, R.drawable.baseline_access_time_24, R.drawable.baseline_watch_later_24)/*.setFactor(1f, false)*/.setMakeFirstTransparent().setOffsetHalf(false));
 
       ArrayList<EmojiSection> expandableSections = new ArrayList<>(6);
@@ -380,20 +349,11 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     // Media sections
 
     if (allowMedia || animatedEmojiOnly) {
-      if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-        gifSectionsView = new MediaHeaderView(getContext());
-        gifSectionsView.init(this, themeProvider, this, true);
-        headerView.addView(gifSectionsView);
-      } else {
-        gifSectionsView = null;
-      }
-
-      stickersSectionsView = new MediaHeaderView(getContext());
-      stickersSectionsView.init(this, themeProvider, this, false);
-      headerView.addView(stickersSectionsView);
+      mediaSectionsView = new MediaHeaderView(getContext());
+      mediaSectionsView.init(this, themeProvider, this);
+      headerView.addView(mediaSectionsView);
     } else {
-      gifSectionsView = null;
-      stickersSectionsView = null;
+      mediaSectionsView = null;
     }
 
     // Shadow and etc
@@ -415,13 +375,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       }
     } else {
       position = 0;
-    }
-
-    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-      if (position == getGifsPosition()) {
-        headerView.setTranslationY(-getHeaderSize());
-        shadowView.setTranslationY(-getHeaderSize());
-      }
     }
 
     final int padding = Screen.dp(4);
@@ -449,13 +402,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     addView(headerView);
     addView(shadowView);
     addView(circleButton);
-
-    if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-      bottomBarView = new EmojiBottomBarView(getContext());
-      bottomBarView.init(themeProvider, hasGifs ? position : new int[]{0,2,2}[position], allowMedia, hasGifs);
-      bottomBarView.setOnClickListener(this);
-      addView(bottomBarView);
-    }
 
     checkBackground();
     // NewEmoji.instance().loadAllEmoji();
@@ -488,9 +434,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       if (pager.getCurrentItem() != 0) {
         this.pager.setCurrentItem(0, false);
       }
-      if (this.gifSectionsView != null) this.gifSectionsView.setVisibility(allowMedia ? VISIBLE : INVISIBLE);
-      if (this.stickersSectionsView != null) this.stickersSectionsView.setVisibility(allowMedia ? VISIBLE : INVISIBLE);
-      if (bottomBarView != null) bottomBarView.setAllowMedia(allowMedia);
+      this.mediaSectionsView.setVisibility(allowMedia ? VISIBLE : INVISIBLE);
       this.emojiHeaderView.setAllowMedia(allowMedia);
       this.adapter.allowMedia = allowMedia;
       this.adapter.notifyDataSetChanged();
@@ -610,11 +554,11 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setShowRecents (boolean showRecents) {
-    stickersSectionsView.setShowRecents(showRecents);
+    mediaSectionsView.setShowRecents(showRecents);
   }
 
   public void setShowFavorite (boolean showFavorite) {
-    stickersSectionsView.setShowFavorite(showFavorite);
+    mediaSectionsView.setShowFavorite(showFavorite);
   }
 
   public void setStickerSets (ArrayList<TGStickerSetInfo> stickers, boolean showFavorite, boolean showRecents) {
@@ -622,7 +566,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setStickerSets (ArrayList<TGStickerSetInfo> stickers, boolean showFavorite, boolean showRecents, boolean showTrending, boolean isFound) {
-    stickersSectionsView.setStickerSets(stickers, showFavorite, showRecents, showTrending, isFound);
+    mediaSectionsView.setStickerSets(stickers, showFavorite, showRecents, showTrending, isFound);
   }
 
   public void setEmojiPacks (ArrayList<TGStickerSetInfo> stickers) {
@@ -632,7 +576,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void invalidateStickerSets () {
-    stickersSectionsView.invalidateStickerSets();
+    mediaSectionsView.invalidateStickerSets();
   }
 
   private void scrollToStickerSet (@NonNull TGStickerSetInfo stickerSet) {
@@ -653,7 +597,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     }
 
-    ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+    ViewController<?> c = adapter.getCachedItem(1);
     if (c != null) {
       ((EmojiMediaListController) c).showStickerSet(stickerSet);
     }
@@ -673,7 +617,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   public boolean sendSticker (View view, TGStickerObj sticker, TdApi.MessageSendOptions sendOptions) {
     if (listener != null && listener.onSendSticker(view, sticker, sendOptions)) {
       if (!sticker.isCustomEmoji() && sendOptions != null && sendOptions.updateOrderOfInstalledStickerSets) {
-        ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+        ViewController<?> c = adapter.getCachedItem(1);
         if (c != null) {
           ((EmojiMediaListController) c).expectReorder(sticker);
         }
@@ -733,11 +677,18 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
         scrollToStickerSet(info);
       }
     } else if (viewId == R.id.btn_circle) {
-      if (listener != null) {
-        if (pager.getCurrentItem() == 0) {
-          listener.onDeleteEmoji();
-        } else if (pager.getCurrentItem() == getGifsPosition()) {
-          listener.onSearchRequested(this, false);
+      switch (pager.getCurrentItem()) {
+        case 0: {
+          if (listener != null) {
+            listener.onDeleteEmoji();
+          }
+          break;
+        }
+        case 1: {
+          if (listener != null) {
+            listener.onSearchRequested(this, false);
+          }
+          break;
         }
       }
     } else if (viewId == R.id.btn_section) {
@@ -776,7 +727,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
             break;
           }
           case 1: {
-            ViewController<?> c = adapter.getCachedItem(getGifsPosition());
+            ViewController<?> c = adapter.getCachedItem(1);
             if (c != null) {
               boolean shownGifs = ((EmojiMediaListController) c).showGIFs();
               if (!shownGifs && listener != null) {
@@ -786,14 +737,14 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
             break;
           }
           case 2: {
-            ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+            ViewController<?> c = adapter.getCachedItem(1);
             if (c != null) {
               ((EmojiMediaListController) c).showHot();
             }
             break;
           }
           case 3: {
-            ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+            ViewController<?> c = adapter.getCachedItem(1);
             if (c != null) {
               ((EmojiMediaListController) c).showSystemStickers();
             }
@@ -804,14 +755,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
       if (listener != null && newSection != -1) {
         listener.onSectionSwitched(this, newSection, prevSection);
-      }
-    } else if (YuSettings.Toggle.NewEmojiKeyboard.is()) {
-      if (viewId == R.id.btn_tabEmojis) {
-        pager.setCurrentItem(0, true);
-      } else if (viewId == R.id.btn_tabGifs) {
-        pager.setCurrentItem(getGifsPosition(), true);
-      } else if (viewId == R.id.btn_tabStickers) {
-        pager.setCurrentItem(getStickersPosition(), true);
       }
     }
   }
@@ -832,10 +775,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setHeaderHideFactor (float factor, float offset) {
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition() && factor == 0) {
-      factor = 1;
-    }
-
     if (animatedEmojiOnly) {
       factor = 0f;
     }
@@ -850,11 +789,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
       if (emojiHeaderView != null) {
         emojiHeaderView.setAlpha(alpha);
       }
-      if (stickersSectionsView != null) {
-        stickersSectionsView.setAlpha(alpha);
-      }
-      if (gifSectionsView != null) {
-        gifSectionsView.setAlpha(alpha);
+      if (mediaSectionsView != null) {
+        mediaSectionsView.setAlpha(alpha);
       }
     }
   }
@@ -870,13 +806,12 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     }
   }
 
-  private void moveHeaderImpl(float factor, boolean animated) {
+  private void moveHeaderImpl (float factor, boolean animated) {
     if (factor == 1f) {
       lastHeaderVisibleY = Math.max(0, lastY - getHeaderSize());
-    } else {
+    } else  {
       lastHeaderVisibleY = lastDesiredHeaderVisibleY = lastY;
     }
-
     setHeaderHideFactor(factor, animated);
   }
 
@@ -955,16 +890,9 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     if (ignoreMovement || scrollState != ViewPager.SCROLL_STATE_IDLE) {
       return;
     }
-
-    float hideFactor = Math.min(1f, Math.max(0f, (float) y / (float) getHeaderSize()));
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition()) {
-      hideFactor = 1;
-    }
-
     lastHeaderVisibleY = 0;
     lastY = y;
-
-    setHeaderHideFactor(hideFactor, false);
+    setHeaderHideFactor(Math.min(1f, Math.max(0f, (float) y / (float) getHeaderSize())), false);
     setCircleVisible(headerHideFactor == 0f, true);
   }
 
@@ -980,9 +908,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     }
 
     float hideFactor = Math.max(0f, Math.min(1f, (float) (y - lastHeaderVisibleY) / (float) getHeaderSize()));
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && getCurrentItem() == getGifsPosition()) {
-      hideFactor = 1;
-    }
 
     if (hideFactor == 1f) {
       lastDesiredHeaderVisibleY = Math.max(0, y - getHeaderSize());
@@ -1023,10 +948,9 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     public Adapter (ViewController<?> context, EmojiLayout parent, boolean allowMedia, @Nullable ViewController<?> themeProvider) {
       this.context = context;
       this.parent = parent;
-      this.cachedItems = new SparseArrayCompat<>(3);
+      this.cachedItems = new SparseArrayCompat<>(2);
       this.themeProvider = themeProvider;
       this.allowMedia = allowMedia;
-      this.hasGifs = parent.isHasGifs();
     }
 
     public @Nullable ViewController<?> getCachedItem (int position) {
@@ -1067,25 +991,12 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
     @Override
     public int getCount () {
-      return allowMedia ? ((YuSettings.Toggle.NewEmojiKeyboard.is() ? (3 + (parent.hasGifs ? 0 : -1)) : 2)) : 1;
+      return allowMedia ? 2 : 1;
     }
 
     @Override
     public void destroyItem (ViewGroup container, int position, @NonNull Object object) {
       container.removeView(((ViewController<?>) object).getValue());
-    }
-
-    private boolean hasGifs;
-
-    public void updateGifSection() {
-      if (hasGifs == parent.hasGifs) return;
-
-      hasGifs = parent.hasGifs;
-
-      EmojiMediaListController c = ((EmojiMediaListController)getCachedItem(1));
-      if (c != null) c.updateIsGif(parent.hasGifs);
-
-      notifyDataSetChanged();
     }
 
     @Override
@@ -1103,11 +1014,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
             c = emojiListController;
           }
         } else if (position == 1) {
-          EmojiMediaListController mediaListController = new EmojiMediaListController(context.context(), context.tdlib(), parent.hasGifs);
-          mediaListController.setArguments(parent);
-          c = mediaListController;
-        } else if (position == 2) {
-          EmojiMediaListController mediaListController = new EmojiMediaListController(context.context(), context.tdlib(), false);
+          EmojiMediaListController mediaListController = new EmojiMediaListController(context.context(), context.tdlib());
           mediaListController.setArguments(parent);
           c = mediaListController;
         } else {
@@ -1116,14 +1023,6 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
         cachedItems.put(position, c);
         if (themeProvider != null) {
           c.bindThemeListeners(themeProvider);
-        }
-        if (!parent.hasGifs && position == 1) {
-          EmojiMediaListController mediaListController = new EmojiMediaListController(context.context(), context.tdlib(), false);
-          mediaListController.setArguments(parent);
-          cachedItems.put(2, mediaListController);
-          if (themeProvider != null) {
-            mediaListController.bindThemeListeners(themeProvider);
-          }
         }
       }
       c.setBottomInset(parent.extraBottomInset, parent.extraBottomInsetWithoutKeyboard);
@@ -1166,77 +1065,54 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   private boolean hasRightButton () {
-    ViewController<?> c = adapter.getCachedItem(getGifsPosition());
+    ViewController<?> c = adapter.getCachedItem(1);
     return c != null && !noInlineSearch && ((EmojiMediaListController) c).needSearchButton();
   }
 
   private void updatePositions () {
-    float currentPageFactor = this.currentPageFactor;
-    float x = 0;
+    float currentPageFactor = animatedEmojiOnly ? 1f : this.currentPageFactor;
     if (emojiHeaderView != null) {
-      x += (float) (emojiHeaderView.getMeasuredWidth()) * currentPageFactor * -1;
-      emojiHeaderView.setTranslationX(x);
-      x += emojiHeaderView.getMeasuredWidth();
+      emojiHeaderView.setTranslationX((float) (emojiHeaderView.getMeasuredWidth()) * currentPageFactor * (Lang.rtl() ? 1f : -1f));
     }
-    if (hasGifs && gifSectionsView != null) {
-      gifSectionsView.setTranslationX(x);
-      x += gifSectionsView.getMeasuredWidth();
-    }
-    if (stickersSectionsView != null) {
-      stickersSectionsView.setTranslationX(x);
+    if (mediaSectionsView != null) {
+      mediaSectionsView.setTranslationX(mediaSectionsView.getMeasuredWidth() * (1f - currentPageFactor) * (Lang.rtl() ? -1f : 1f));
     }
   }
 
   @Override
   public void onPageScrolled (int position, float positionOffset, int positionOffsetPixels) {
     positionOffset = ViewPager.clampPositionOffset(positionOffset);
-    float factor = (float) position + positionOffset;
-    setCurrentPageFactor(factor);
-
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && hasGifs) {
-      setHeaderHideFactor(factor > 1 ? (2 - factor) : factor, false);
-      return;
-    }
+    setCurrentPageFactor((float) position + positionOffset);
 
     if (affectHeight) {
-      moveHeaderImpl(fromHeightHideFactor + Math.abs(fromPageFactor - currentPageFactor) * heightFactorDiff, false);
+      float factor = fromHeightHideFactor + Math.abs(fromPageFactor - currentPageFactor) * heightFactorDiff;
+      moveHeaderImpl(factor, false);
     }
   }
 
   @Override
   public void onPageSelected (int position) {
-    Settings.instance().setEmojiPosition(List.of(0,getGifsPosition(),getStickersPosition()).indexOf(position));
+    Settings.instance().setEmojiPosition(position);
     boolean hasLeft = hasLeftButton();
     boolean hasRight = hasRightButton();
     if (hasLeft && hasRight) {
       if (position == 0) {
         circleButton.replaceIcon(R.drawable.baseline_backspace_24, -Screen.dp(BACKSPACE_OFFSET));
-      } else if (position == getGifsPosition()) {
+      } else {
         circleButton.replaceIcon(R.drawable.baseline_search_24);
       }
     } else if (hasLeft || hasRight) {
-      setCircleVisible((hasLeft && position == 0) || (hasRight && position == getGifsPosition()),
-              true, position == 0 ? R.drawable.baseline_backspace_24 : R.drawable.baseline_search_24,
-              position == 0 ? -Screen.dp(BACKSPACE_OFFSET) : 0);
+      setCircleVisible((hasLeft && position == 0) || (hasRight && position == 1), true, position == 0 ? R.drawable.baseline_backspace_24 : R.drawable.baseline_search_24, position == 0 ? -Screen.dp(BACKSPACE_OFFSET) : 0);
     }
     resetScrollState(false);
-
-    if (YuSettings.Toggle.NewEmojiKeyboard.is() && bottomBarView != null) {
-      bottomBarView.setSelectedIndex(hasGifs ? position : new int[]{0,2,2}[position]);
-    }
   }
 
   private boolean affectHeight;
   private float fromHeightHideFactor, heightFactorDiff, fromPageFactor;
 
   private float getDesiredPageFactor (int pageIndex) {
-    if (pageIndex == getGifsPosition()) {
-      ViewController<?> c = adapter.getCachedItem(getGifsPosition());
-      if (c != null) {
-        return ((EmojiMediaListController) c).getDesiredHeaderHideFactor();
-      }
-    } else if (pageIndex == getStickersPosition()) {
-      ViewController<?> c = adapter.getCachedItem(getStickersPosition());
+    if (pageIndex == 1) {
+      ViewController<?> c = adapter.getCachedItem(1);
       if (c != null) {
         return ((EmojiMediaListController) c).getDesiredHeaderHideFactor();
       }
@@ -1299,18 +1175,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     this.forceHeight = forceHeight;
   }
 
-  public int getGifsPosition() {
-    return YuSettings.Toggle.NewEmojiKeyboard.is() ? (hasGifs ? 1 : -1) : 1;
-  }
-
-  public int getStickersPosition() {
-    return YuSettings.Toggle.NewEmojiKeyboard.is() ? (hasGifs ? 2 : 1) : 1;
-  }
-
   // Icon
 
   private int getCurrentMediaEmojiSection () {
-    ViewController<?> c = adapter.getCachedItem(pager.getCurrentItem());
+    ViewController<?> c = adapter.getCachedItem(1);
     if (c instanceof EmojiMediaListController) {
       return ((EmojiMediaListController) c).getMediaSection();
     }
@@ -1320,7 +1188,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   public @EmojiMediaType int getCurrentEmojiSection () {
     if (allowMedia) {
       int currentItem = pager.getCurrentItem();
-      if (currentItem <= 2) {
+      if (currentItem == 1) {
         return getCurrentMediaEmojiSection();
       }
     }
@@ -1370,13 +1238,9 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   // Legacy
 
   public void reset () {
-    ViewController<?> c = adapter.getCachedItem(getGifsPosition());
+    ViewController<?> c = adapter.getCachedItem(1);
     if (c != null) {
       ((EmojiMediaListController) c).applyScheduledChanges();
-    }
-    ViewController<?> c3 = adapter.getCachedItem(getStickersPosition());
-    if (c3 != null) {
-      ((EmojiMediaListController) c3).applyScheduledChanges();
     }
     ViewController<?> c2 = adapter.getCachedItem(0);
     if (c2 instanceof EmojiListController) {
@@ -1397,11 +1261,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   @Override
   public void onLanguagePackEvent (int event, int arg1) {
     if (Lang.hasDirectionChanged(event, arg1)) {
-      if (stickersSectionsView != null) {
-        ((LinearLayoutManager) stickersSectionsView.getLayoutManager()).setReverseLayout(Lang.rtl());
-      }
-      if (gifSectionsView != null) {
-        ((LinearLayoutManager) gifSectionsView.getLayoutManager()).setReverseLayout(Lang.rtl());
+      if (mediaSectionsView != null) {
+        ((LinearLayoutManager) mediaSectionsView.getLayoutManager()).setReverseLayout(Lang.rtl());
       }
       if (pager != null) {
         pager.checkRtl();
@@ -1424,8 +1285,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void onAddStickerSection (@IdRes int controllerId, int section, TGStickerSetInfo info) {
-    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && stickersSectionsView != null) {
-      stickersSectionsView.addStickerSection(section, info);
+    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && mediaSectionsView != null) {
+      mediaSectionsView.addStickerSection(section, info);
     } else if (controllerId == EmojiLayout.EMOJI_INSTALLED_CONTROLLER_ID && emojiHeaderView != null) {
       emojiHeaderView.addStickerSection(section, info);
     }
@@ -1433,8 +1294,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void onMoveStickerSection (@IdRes int controllerId, int fromSection, int toSection) {
-    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && stickersSectionsView != null) {
-      stickersSectionsView.moveStickerSection(fromSection, toSection);
+    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && mediaSectionsView != null) {
+      mediaSectionsView.moveStickerSection(fromSection, toSection);
     } else if (controllerId == EmojiLayout.EMOJI_INSTALLED_CONTROLLER_ID && emojiHeaderView != null) {
       emojiHeaderView.moveStickerSection(fromSection, toSection);
     }
@@ -1442,21 +1303,21 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void onRemoveStickerSection (@IdRes int controllerId, int section) {
-    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && stickersSectionsView != null) {
-      stickersSectionsView.removeStickerSection(section);
+    if (controllerId == EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID && mediaSectionsView != null) {
+      mediaSectionsView.removeStickerSection(section);
     } else if (controllerId == EmojiLayout.EMOJI_INSTALLED_CONTROLLER_ID && emojiHeaderView != null) {
       emojiHeaderView.removeStickerSection(section);
     }
   }
 
   public void setCurrentStickerSectionByStickerSetIndex (int stickerSetIndex) {
-    stickersSectionsView.scrollToStickerSectionBySetIndex(stickerSetIndex, true);
+    mediaSectionsView.scrollToStickerSectionBySetIndex(stickerSetIndex, true);
   }
 
   @Override
   public void setCurrentStickerSectionByPosition (@IdRes int controllerId, int i, boolean isStickerSection, boolean animated) {
-    if (controllerId == R.id.controller_emojiLayoutStickers && stickersSectionsView != null) {
-      stickersSectionsView.setCurrentStickerSectionByPosition(i, isStickerSection, animated);
+    if (controllerId == R.id.controller_emojiLayoutStickers && mediaSectionsView != null) {
+      mediaSectionsView.setCurrentStickerSectionByPosition(i, isStickerSection, animated);
     } else if (controllerId == EMOJI_INSTALLED_CONTROLLER_ID && emojiHeaderView != null) {
       emojiHeaderView.setCurrentStickerSectionByPosition(i + (isStickerSection ? 1: 0), animated);
     }
@@ -1484,8 +1345,8 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setHasNewHots (@IdRes int controllerId, boolean hasHots) {
-    if (controllerId == STICKERS_TRENDING_CONTROLLER_ID && stickersSectionsView != null) {
-      stickersSectionsView.setHasNewHots(hasHots);
+    if (controllerId == STICKERS_TRENDING_CONTROLLER_ID && mediaSectionsView != null) {
+      mediaSectionsView.setHasNewHots(hasHots);
     }
   }
 
@@ -1518,13 +1379,13 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
         }
         break;
       }
-      case 1:
-      case 2:
-        ViewController<?> c = adapter.getCachedItem(pager.getCurrentItem());
+      case 1: {
+        ViewController<?> c = adapter.getCachedItem(1);
         if (c != null) {
           resetScrollingCache(((EmojiMediaListController) c).getCurrentScrollY(), silent);
         }
         break;
+      }
     }
   }
 
