@@ -1,5 +1,7 @@
 package com.github.yukagram.ui.emoji_keyboard;
 
+import static org.thunderdog.challegram.widget.EmojiLayout.EMOJI_INSTALLED_CONTROLLER_ID;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -25,7 +27,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
     private ViewController<?> context;
     private boolean allowMedia;
     private boolean animatedEmojiOnly;
-    private EmojiLayout.Listener listener;
+    public EmojiLayout.Listener listener;
     private ViewController<?> themeProvider;
     private boolean useDarkMode;
     private boolean classicEmojiOnly;
@@ -53,7 +55,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         this.classicEmojiOnly = classicEmojiOnly;
         this.parent = parent;
 
-        adapter = new Adapter(context, this, allowMedia, themeProvider, this);
+        adapter = new Adapter(context, themeProvider, this);
         pager = new RtlViewPager(parent.getContext());
         pager.setOverScrollMode(Config.HAS_NICE_OVER_SCROLL_EFFECT ? View.OVER_SCROLL_IF_CONTENT_SCROLLS :View.OVER_SCROLL_NEVER);
         pager.addOnPageChangeListener(this);
@@ -85,10 +87,6 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         adapter.notifyDataSetChanged();
     }
 
-    public void setAllowPremiumFeatures(boolean allowPremiumFeatures) {
-
-    }
-
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         bottomBar.animator.setForcedValue(position + positionOffset);
@@ -118,6 +116,10 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         return pager.getCurrentItem();
     }
 
+    public ViewController<EmojiKeyboardWrapped> getSectionController(int index) {
+        return adapter.cachedItems[index];
+    }
+
     public void reset() {
 
     }
@@ -143,26 +145,60 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
     }
 
     public void setIgnoreMovement(boolean ignoreMovement) {
+
+    }
+
+    private boolean allowPremiumFeatures;
+
+    public void setAllowPremiumFeatures(boolean allowPremiumFeatures) {
+        this.allowPremiumFeatures = allowPremiumFeatures;
+    }
+
+    public void checkAllowPremiumFeatures() {
+        if (getSectionController(0) instanceof EmojiSectionController section) {
+            section.setIsPremium((allowPremiumFeatures || parent.parentController.tdlib().hasPremium()) && !classicEmojiOnly, false);
+        }
+    }
+
+    public boolean isAllowMedia() {
+        return allowMedia;
+    }
+
+    public boolean isAllowPremiumFeatures() {
+        return allowPremiumFeatures;
+    }
+
+    public void resetScrollState(boolean silent) {
+
+    }
+
+    public void setCurrentStickerSectionByPosition(int controllerId, int i, boolean isStickerSection, boolean animated) {
+        if (controllerId == R.id.controller_emojiLayoutStickers) {
+            // todo
+        } else if (controllerId == EMOJI_INSTALLED_CONTROLLER_ID) {
+            if (getSectionController(0) instanceof EmojiSectionController section) {
+                section.emojiHeaderView.setCurrentStickerSectionByPosition(i + (isStickerSection ? 1: 0), animated);
+            }
+        }
     }
 
     public static class Adapter extends PagerAdapter {
         ViewController<?> context;
         EmojiKeyboardWrapped parent;
+        ViewController<?> themeProvider;
 
         public Adapter(
             ViewController<?> context,
-            EmojiKeyboardWrapped keyboard,
-            boolean allowMedia,
             ViewController<?> themeProvider,
             EmojiKeyboardWrapped parent
         ) {
             this.context = context;
             this.parent = parent;
-
-            cachedItems = new ViewController[3];
+            this.themeProvider = themeProvider;
         }
 
-        public ViewController<EmojiKeyboardWrapped>[] cachedItems;
+        @SuppressWarnings("unchecked")
+        public ViewController<EmojiKeyboardWrapped>[] cachedItems = new ViewController[3];
 
         @Override
         public int getCount() {
@@ -175,14 +211,25 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
             ViewController<EmojiKeyboardWrapped> c = cachedItems[position];
             if (c == null) {
                 switch (position) {
-                    case 0 -> c = new EmojiListController(container.getContext(), context.tdlib(), parent.classicEmojiOnly);
-                    case 1 -> c = new GifListController(container.getContext(), context.tdlib());
-                    case 2 -> c = new StickersListController(container.getContext(), context.tdlib());
-                    default -> {
-                        return null;
-                    }
+                    case 0 -> c = new EmojiSectionController(
+                        container.getContext(),
+                        context.tdlib(),
+                        themeProvider,
+                        parent.classicEmojiOnly,
+                        parent.useDarkMode
+                    );
+                    case 1 -> c = new GifSectionController(
+                        container.getContext(),
+                        context.tdlib()
+                    );
+                    case 2 -> c = new StickersSectionController(
+                        container.getContext(),
+                        context.tdlib()
+                    );
+                    default -> throw new RuntimeException("motherfucker");
                 }
                 c.setArguments(parent);
+                cachedItems[position] = c;
             }
             container.addView(c.getValue());
             return c;
@@ -202,9 +249,9 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         @Override
         public int getItemPosition(@NonNull Object object) {
             return switch (object) {
-                case EmojiListController _ -> 0;
-                case GifListController _ -> 1;
-                case StickersListController _ -> 2;
+                case EmojiSectionController _ -> 0;
+                case GifSectionController _ -> 1;
+                case StickersSectionController _ -> 2;
                 default -> POSITION_NONE;
             };
         }

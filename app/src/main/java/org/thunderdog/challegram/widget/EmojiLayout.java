@@ -95,7 +95,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     default void onSectionInteracted (EmojiLayout layout, @EmojiMediaType int section, boolean interactionFinished) { }
   }
 
-  private ViewController<?> parentController;
+  public ViewController<?> parentController;
   private @Nullable Listener listener;
 
   private RtlViewPager pager;
@@ -473,6 +473,7 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
     if (emojiHeaderView != null && parentController != null) {
       emojiHeaderView.setIsPremium((allowPremiumFeatures || parentController.tdlib().hasPremium()) && !classicEmojiOnly, false);
     }
+    if (emojiKeyboard != null) emojiKeyboard.checkAllowPremiumFeatures();
   }
 
   public void onTextChanged (CharSequence charSequence) {
@@ -1354,6 +1355,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void setCurrentStickerSectionByPosition (@IdRes int controllerId, int i, boolean isStickerSection, boolean animated) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setCurrentStickerSectionByPosition(controllerId, i, isStickerSection, animated);
+      return;
+    }
     if (controllerId == R.id.controller_emojiLayoutStickers && mediaSectionsView != null) {
       mediaSectionsView.setCurrentStickerSectionByPosition(i, isStickerSection, animated);
     } else if (controllerId == EMOJI_INSTALLED_CONTROLLER_ID && emojiHeaderView != null) {
@@ -1413,6 +1418,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
 
   @Override
   public void resetScrollState (boolean silent) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.resetScrollState(silent);
+      return;
+    }
     switch (pager.getCurrentItem()) {
       case 0: {
         ViewController<?> c = adapter.getCachedItem(0);

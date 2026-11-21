@@ -9,16 +9,16 @@ import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.telegram.Tdlib;
 import org.thunderdog.challegram.widget.TextView;
 
-public class GifListController extends ViewController<EmojiKeyboardWrapped> {
+public class StickersSectionController extends ViewController<EmojiKeyboardWrapped> {
 
-    public GifListController(@NonNull Context context, Tdlib tdlib) {
+    public StickersSectionController(@NonNull Context context, Tdlib tdlib) {
         super(context, tdlib);
     }
 
     @Override
     protected View onCreateView(Context context) {
         TextView view = new TextView(context);
-        view.setText("o algo 2");
+        view.setText("o algo 3");
         return view;
     }
 
