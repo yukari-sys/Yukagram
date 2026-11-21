@@ -1,4 +1,4 @@
-package com.github.yukagram.ui.main_controller;
+package com.github.yukagram.ui.main_controller.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -16,6 +16,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
+
+import com.github.yukagram.ui.Yutils;
+import com.github.yukagram.ui.main_controller.DialogsController;
 
 import org.drinkless.tdlib.TdApi;
 import org.jetbrains.annotations.NotNull;
@@ -122,15 +125,6 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
     );
   }
 
-  public RectF rectFLerp(RectF a, RectF b, float factor) {
-    return new RectF(
-      MathUtils.fromTo(a.left, b.left, factor),
-      MathUtils.fromTo(a.top, b.top, factor),
-      MathUtils.fromTo(a.right, b.right, factor),
-      MathUtils.fromTo(a.bottom, b.bottom, factor)
-    );
-  }
-
   public int animationStart;
   public int animationEnd;
 
@@ -173,7 +167,7 @@ public class FoldersHeaderView extends FrameLayoutFix implements AnimatorListene
 
     Button be = buttons.get(end);
 
-    pillRect = rectFLerp(getButtonPill(bs), getButtonPill(be), factor);
+    pillRect = Yutils.rectFLerp(getButtonPill(bs), getButtonPill(be), factor);
     scrollView.postInvalidateOnAnimation();
 
     bs.animator.forceValue(bs.animator.getValue(), 1 - factor);

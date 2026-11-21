@@ -1255,6 +1255,10 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   // Legacy
 
   public void reset () {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.reset();
+      return;
+    }
     ViewController<?> c = adapter.getCachedItem(1);
     if (c != null) {
       ((EmojiMediaListController) c).applyScheduledChanges();
@@ -1266,10 +1270,18 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void destroy () {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.destroy();
+      return;
+    }
     adapter.destroyCachedItems();
   }
 
   public void invalidateAll () {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.invalidateAll();
+      return;
+    }
     if (adapter != null) {
       adapter.invalidateCachedItems();
     }

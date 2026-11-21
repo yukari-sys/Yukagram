@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.github.yukagram.ui.emoji_keyboard.widget.EmojiBottomBarView;
+
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.navigation.ViewController;
@@ -51,7 +53,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         this.classicEmojiOnly = classicEmojiOnly;
         this.parent = parent;
 
-        adapter = new Adapter(context, this, allowMedia, themeProvider);
+        adapter = new Adapter(context, this, allowMedia, themeProvider, this);
         pager = new RtlViewPager(parent.getContext());
         pager.setOverScrollMode(Config.HAS_NICE_OVER_SCROLL_EFFECT ? View.OVER_SCROLL_IF_CONTENT_SCROLLS :View.OVER_SCROLL_NEVER);
         pager.addOnPageChangeListener(this);
@@ -79,7 +81,8 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
     }
 
     public void setAllowMedia(boolean allowMedia) {
-
+        bottomBar.setAllowMedia(allowMedia);
+        adapter.notifyDataSetChanged();
     }
 
     public void setAllowPremiumFeatures(boolean allowPremiumFeatures) {
@@ -88,7 +91,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+        bottomBar.animator.setForcedValue(position + positionOffset);
     }
 
     @Override
@@ -115,16 +118,31 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         return pager.getCurrentItem();
     }
 
+    public void reset() {
+
+    }
+
+    public void destroy() {
+
+    }
+
+    public void invalidateAll() {
+
+    }
+
     public static class Adapter extends PagerAdapter {
         ViewController<?> context;
+        EmojiKeyboardWrapped parent;
 
         public Adapter(
             ViewController<?> context,
             EmojiKeyboardWrapped keyboard,
             boolean allowMedia,
-            ViewController<?> themeProvider
+            ViewController<?> themeProvider,
+            EmojiKeyboardWrapped parent
         ) {
             this.context = context;
+            this.parent = parent;
 
             cachedItems = new ViewController<?>[3];
         }
@@ -133,7 +151,7 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
 
         @Override
         public int getCount() {
-            return 3;
+            return parent.allowMedia ? 3 : 1;
         }
 
         @NonNull
