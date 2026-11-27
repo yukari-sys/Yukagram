@@ -15,10 +15,13 @@ import com.github.yukagram.ui.emoji_keyboard.widget.EmojiBottomBarView;
 
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.config.Config;
+import org.thunderdog.challegram.data.TGStickerSetInfo;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.unsorted.Settings;
 import org.thunderdog.challegram.widget.EmojiLayout;
 import org.thunderdog.challegram.widget.rtl.RtlViewPager;
+
+import java.util.ArrayList;
 
 import me.vkryl.android.widget.FrameLayoutFix;
 
@@ -182,6 +185,36 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
         }
     }
 
+    public void setShowRecents(boolean showRecents) {
+        if (getSectionController(2) instanceof StickersSectionController section) {
+            section.mediaHeaderView.setShowRecents(showRecents);
+        }
+    }
+
+    public void setShowFavorite(boolean showFavorite) {
+        if (getSectionController(2) instanceof StickersSectionController section) {
+            section.mediaHeaderView.setShowFavorite(showFavorite);
+        }
+    }
+
+    public void setStickerSets(ArrayList<TGStickerSetInfo> stickers, boolean showFavorite, boolean showRecents, boolean showTrending, boolean isFound) {
+        if (getSectionController(2) instanceof StickersSectionController section) {
+            section.mediaHeaderView.setStickerSets(stickers, showFavorite, showRecents, showTrending, isFound);
+        }
+    }
+
+    public void setEmojiPacks(ArrayList<TGStickerSetInfo> stickers) {
+        if (getSectionController(0) instanceof EmojiSectionController section) {
+            section.emojiHeaderView.setStickerSets(stickers);
+        }
+    }
+
+    public void invalidateStickerSets() {
+        if (getSectionController(2) instanceof StickersSectionController section) {
+            section.mediaHeaderView.invalidateStickerSets();
+        }
+    }
+
     public static class Adapter extends PagerAdapter {
         ViewController<?> context;
         EmojiKeyboardWrapped parent;
@@ -220,11 +253,14 @@ public class EmojiKeyboardWrapped implements ViewPager.OnPageChangeListener, Vie
                     );
                     case 1 -> c = new GifSectionController(
                         container.getContext(),
-                        context.tdlib()
+                        context.tdlib(),
+                        themeProvider
                     );
                     case 2 -> c = new StickersSectionController(
                         container.getContext(),
-                        context.tdlib()
+                        context.tdlib(),
+                        themeProvider,
+                        parent.useDarkMode
                     );
                     default -> throw new RuntimeException("motherfucker");
                 }

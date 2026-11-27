@@ -86,8 +86,16 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
   private final EmojiLayoutRecyclerController stickersController;
   private final EmojiLayoutTrendingController trendingSetsController;
 
+  private final int finalSection;
+
   public EmojiMediaListController (Context context, Tdlib tdlib) {
+    this(context, tdlib, -1);
+  }
+
+  // finalsection - EmojiMediaType
+  public EmojiMediaListController (Context context, Tdlib tdlib, int finalSection) {
     super(context, tdlib);
+    this.finalSection = finalSection;
     stickersController = new EmojiLayoutRecyclerController(context, tdlib, EmojiLayout.STICKERS_INSTALLED_CONTROLLER_ID);
     trendingSetsController = new EmojiLayoutTrendingController(context, tdlib, EmojiLayout.STICKERS_TRENDING_CONTROLLER_ID);
     trendingSetsController.setCallbacks(stickerSetsDataProvider(), new TdApi.StickerTypeRegular());
@@ -266,7 +274,7 @@ public class EmojiMediaListController extends ViewController<EmojiLayout> implem
 
     checkSpanCount();
 
-    int currentSection = Settings.instance().getEmojiMediaSection();
+    int currentSection = finalSection != -1 ? finalSection : Settings.instance().getEmojiMediaSection();
     switch (currentSection) {
       case EmojiMediaType.STICKER: {
         this.contentView.init(SECTION_STICKERS);

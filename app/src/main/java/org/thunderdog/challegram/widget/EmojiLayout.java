@@ -575,10 +575,18 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setShowRecents (boolean showRecents) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setShowRecents(showRecents);
+      return;
+    }
     mediaSectionsView.setShowRecents(showRecents);
   }
 
   public void setShowFavorite (boolean showFavorite) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setShowFavorite(showFavorite);
+      return;
+    }
     mediaSectionsView.setShowFavorite(showFavorite);
   }
 
@@ -587,16 +595,27 @@ public class EmojiLayout extends FrameLayoutFix implements ViewPager.OnPageChang
   }
 
   public void setStickerSets (ArrayList<TGStickerSetInfo> stickers, boolean showFavorite, boolean showRecents, boolean showTrending, boolean isFound) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setStickerSets(stickers, showFavorite, showRecents, showTrending, isFound);
+      return;
+    }
     mediaSectionsView.setStickerSets(stickers, showFavorite, showRecents, showTrending, isFound);
   }
 
   public void setEmojiPacks (ArrayList<TGStickerSetInfo> stickers) {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.setEmojiPacks(stickers);
+    }
     if (emojiHeaderView != null) {
       emojiHeaderView.setStickerSets(stickers);
     }
   }
 
   public void invalidateStickerSets () {
+    if (emojiKeyboard != null) {
+      emojiKeyboard.invalidateStickerSets();
+      return;
+    }
     mediaSectionsView.invalidateStickerSets();
   }
 
