@@ -128,5 +128,5 @@
 	branch = main
 [submodule "tdlib/bin"]
 	path = tdlib/bin
-	url = https://github.com/yukari-sys/tdlib
+	url = https://github.com/yukari-sys/tdlib-builds
 	branch = build
