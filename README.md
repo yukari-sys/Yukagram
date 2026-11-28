@@ -139,7 +139,7 @@ keystore.file=/path/to/keystore.properties
 
 ### Tdlib rebuilding
 
-By default, a pre-built version of TDLib from the [yukari-sys/tdlib build branch](https://github.com/yukari-sys/tdlib/tree/build) is used,
+By default, a pre-built version of TDLib from the [yukari-sys/tdlib-builds](https://github.com/yukari-sys/tdlib-builds/tree/build) repo is used,
 but you can also compile it yourself from the same source code if you wish.
 
 ```sh
