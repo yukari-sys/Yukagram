@@ -2422,7 +2422,7 @@ public class TD {
   public static boolean needMuteIcon (TdApi.ChatNotificationSettings settings, TdApi.ScopeNotificationSettings surroundingScope) {
     if (settings != null) {
       if (settings.useDefaultMuteFor) {
-        return false; // surroundingScope != null && surroundingScope.muteFor > 0;
+        return surroundingScope != null && surroundingScope.muteFor > 0;
       } else {
         return settings.muteFor > 0;
       }

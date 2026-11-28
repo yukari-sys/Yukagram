@@ -1279,6 +1279,9 @@ public class Settings {
   private ReferenceList<ChatListModeChangeListener> chatListModeListeners;
 
   public int getChatListMode () {
+    if (YuSettings.Toggle.NewDialogsView.is()) {
+      return CHAT_MODE_2LINE;
+    }
     if (_chatListMode == null) {
       int defaultMode = CHAT_MODE_3LINE; // TODO determine based on display settings
       _chatListMode = pmc.getInt(KEY_CHAT_LIST_MODE, defaultMode);

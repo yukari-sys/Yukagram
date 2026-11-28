@@ -23,5 +23,5 @@ import java.lang.annotation.RetentionPolicy;
   EmojiMediaType.EMOJI, EmojiMediaType.GIF, EmojiMediaType.STICKER
 })
 public @interface EmojiMediaType {
-  int STICKER = 0, GIF = 1, EMOJI = 2;
+  int STICKER = 2, GIF = 1, EMOJI = 0;
 }

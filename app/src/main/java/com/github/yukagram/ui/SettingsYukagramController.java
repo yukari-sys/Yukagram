@@ -57,6 +57,8 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
           view.getToggler().setRadioEnabled(YuSettings.Toggle.NewEmojiKeyboard.is(), isUpdate);
         } else if (itemId == R.id.btn_hideTrending) {
           view.getToggler().setRadioEnabled(YuSettings.Toggle.HideTrending.is(), isUpdate);
+        } else if (itemId == R.id.btn_newDialogsView) {
+          view.getToggler().setRadioEnabled(YuSettings.Toggle.NewDialogsView.is(), isUpdate);
         }
       }
     };
@@ -80,8 +82,10 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
 
     items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.yu_Sidebar));
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
-    items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveArchiveToSidebar, 0, R.string.yu_MoveArchiveToSidebar));
-    items.add(new ListItem(ListItem.TYPE_SEPARATOR));
+    if (!YuSettings.Toggle.NewDialogsView.is()) {
+      items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveArchiveToSidebar, 0, R.string.yu_MoveArchiveToSidebar));
+      items.add(new ListItem(ListItem.TYPE_SEPARATOR));
+    }
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_moveCallsToSidebar, 0, R.string.yu_MoveCallsToSidebar));
     items.add(new ListItem(ListItem.TYPE_SEPARATOR));
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_hideSidebarButtonInviteFriends, 0, R.string.yu_HideSidebarButtonInviteFriends));
@@ -94,6 +98,11 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
     items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.yu_Privacy));
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
     items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_hidePhoneNumbers, 0, R.string.yu_HidePhoneNumbers));
+    items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
+
+    items.add(new ListItem(ListItem.TYPE_HEADER, 0, 0, R.string.yu_DialogsList));
+    items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
+    items.add(new ListItem(ListItem.TYPE_RADIO_SETTING, R.id.btn_newDialogsView, 0, R.string.yu_NewDialogsView));
     items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
 
     recyclerView.setAdapter(adapter);
@@ -131,6 +140,9 @@ public class SettingsYukagramController extends RecyclerViewController<Void> imp
       YuSettings.Toggle.NewEmojiKeyboard.set(adapter.toggleView(v));
     } else if (viewId == R.id.btn_hideTrending) {
       YuSettings.Toggle.HideTrending.set(adapter.toggleView(v));
+    } else if (viewId == R.id.btn_newDialogsView) {
+      YuSettings.Toggle.NewDialogsView.set(adapter.toggleView(v));
+      needToRestart = true;
     }
 
     if (needToRestart) {

@@ -19,8 +19,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.github.yukagram.YuSettings;
-
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.navigation.ViewController;
 import org.thunderdog.challegram.tool.Screen;
@@ -52,7 +50,7 @@ public class EmojiHeaderViewNonPremium extends FrameLayoutFix {
     emojiSections.add(new EmojiSection(emojiLayout, EmojiSection.SECTION_EMOJI_TRAVEL, R.drawable.baseline_directions_car_24, R.drawable.baseline_directions_car_24));
     emojiSections.add(new EmojiSection(emojiLayout, EmojiSection.SECTION_EMOJI_SYMBOLS, R.drawable.deproko_baseline_lamp_24, R.drawable.deproko_baseline_lamp_filled_24));
     emojiSections.add(new EmojiSection(emojiLayout, EmojiSection.SECTION_EMOJI_FLAGS, R.drawable.deproko_baseline_flag_outline_24, R.drawable.deproko_baseline_flag_filled_24).setMakeFirstTransparent());
-    if (allowMedia && !YuSettings.Toggle.NewEmojiKeyboard.is()) {
+    if (allowMedia) {
       emojiSections.add(new EmojiSection(emojiLayout, EmojiSection.SECTION_SWITCH_TO_MEDIA, R.drawable.deproko_baseline_stickers_24, 0).setActiveDisabled());
     }
     emojiSectionViews.clear();
@@ -69,7 +67,7 @@ public class EmojiHeaderViewNonPremium extends FrameLayoutFix {
   }
 
   public void setMediaSection (boolean isGif) {
-    if (allowMedia && !YuSettings.Toggle.NewEmojiKeyboard.is()) {
+    if (allowMedia) {
       emojiSections.get(emojiSections.size() - 1).changeIcon(isGif ? R.drawable.deproko_baseline_gif_24 : R.drawable.deproko_baseline_stickers_24);
     }
   }

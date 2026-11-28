@@ -20,6 +20,8 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
+import com.github.yukagram.YuSettings;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.U;
@@ -1200,11 +1202,11 @@ public class TGChat implements TdlibStatusManager.HelperTarget, ContentPreview.R
   private int textIconsPadding;
 
   private static TextStyleProvider getTextStyleProvider (int chatListMode) {
-    return Paints.robotoStyleProvider(chatListMode == Settings.CHAT_MODE_3LINE ? 15 : 16);
+    return Paints.robotoStyleProvider(YuSettings.Toggle.NewDialogsView.is() ? 15 : (chatListMode == Settings.CHAT_MODE_3LINE ? 15 : 16));
   }
 
   private static TextStyleProvider getTitleStyleProvider (int chatListMode) {
-    return Paints.robotoStyleProvider(chatListMode == Settings.CHAT_MODE_3LINE ? 16 : 17);
+    return Paints.robotoStyleProvider(YuSettings.Toggle.NewDialogsView.is() ? 16 : (chatListMode == Settings.CHAT_MODE_3LINE ? 16 : 17));
   }
 
   public @Nullable IntList getTextIconIds () {

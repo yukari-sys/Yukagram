@@ -94,6 +94,7 @@ public class ChatsViewHolder extends RecyclerView.ViewHolder {
         ChatView view = new ChatView(context, tdlib);
         view.setPreviewActionListProvider(actionListProvider);
         view.setLongPressInterceptor(parentController);
+        view.setController(parentController);
         if (parentController != null) {
           view.setAnimationsDisabled(parentController.isLaunching());
           view.setOnClickListener(parentController);

@@ -103,7 +103,9 @@ import org.thunderdog.challegram.ui.EditRightsController;
 import org.thunderdog.challegram.ui.EditUsernameController;
 import org.thunderdog.challegram.ui.InstantViewController;
 import org.thunderdog.challegram.ui.ListItem;
-import org.thunderdog.challegram.ui.MainController;
+
+import com.github.yukagram.YuSettings;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 import org.thunderdog.challegram.ui.MapController;
 import org.thunderdog.challegram.ui.MapControllerFactory;
 import org.thunderdog.challegram.ui.MessagesController;
@@ -2099,7 +2101,7 @@ public class TdlibUi extends Handler {
       c.setPasscodeMode(PasscodeController.MODE_UNLOCK);
       if (navigation.isEmpty()) {
         navigation.initController(c);
-        MainController main = new MainController(context.context(), context.tdlib());
+        AbstractMainController<?> main = AbstractMainController.create(context.context(), context.tdlib());
         main.getValue();
         navigation.getStack().insert(main, 0);
       } else {
@@ -2294,7 +2296,7 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(controller);
-      MainController c = new MainController(context.context(), context.tdlib());
+      AbstractMainController<?> c = AbstractMainController.create(context.context(), context.tdlib());
       c.getValue();
       navigation.getStack().insert(c, 0);
     } else if (navigation.getStackSize() > 1 && (options & CHAT_OPTION_KEEP_STACK) == 0) {
@@ -2356,7 +2358,7 @@ public class TdlibUi extends Handler {
 
     if (navigation.isEmpty()) {
       navigation.initController(profileController);
-      MainController c = new MainController(context.context(), context.tdlib());
+      AbstractMainController<?> c = AbstractMainController.create(context.context(), context.tdlib());
       c.getValue();
       navigation.getStack().insert(c, 0);
     } else {
@@ -5773,6 +5775,7 @@ public class TdlibUi extends Handler {
     }
     final TdApi.ChatPosition position = ChatPosition.findPosition(chat, chatList);
     final boolean hasSelect = canSelect && onSelect != null;
+    boolean moreChatOptionsButton = false;
     if (allowInteractions) {
       if (tdlib.chatAvailable(chat)) {
         long userId = TD.getUserId(chat);
@@ -5822,17 +5825,27 @@ public class TdlibUi extends Handler {
       if (ids.size() > 1) {
         strings.append(R.string.MoreChatOptions);
         icons.append(R.drawable.baseline_more_horiz_24);
+        moreChatOptionsButton = true;
       } else {
         strings.append(isSelected ? R.string.Unselect : R.string.Select);
         icons.append(R.drawable.baseline_playlist_add_check_24);
       }
     }
 
+    // New dialogs view: the button that is labeled "More" opens the chat options menu instead of
+    // silently selecting the chat. Selecting stays reachable through the "Select" entry of that
+    // menu, and through the "Select" button that is shown while a selection is already active.
+    final boolean openChatOptionsMenu = moreChatOptionsButton && YuSettings.Toggle.NewDialogsView.is();
+
     return new ForceTouchView.ActionListener() {
       @Override
       public void onForceTouchAction (ForceTouchView.ForceTouchContext c, int actionId, Object arg) {
         if (actionId == R.id.btn_selectChat) {
-          onSelect.run();
+          if (openChatOptionsMenu) {
+            showChatOptions(context, chatList, chatId, messageThread, source, canSelect, isSelected, onSelect);
+          } else {
+            onSelect.run();
+          }
         } else {
           processChatAction(context, chatList, chatId, messageThread, source, actionId, null);
         }

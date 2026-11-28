@@ -1,7 +1,11 @@
-package com.github.yukagram.ui.widget;
+package com.github.yukagram.ui.emoji_keyboard.widget;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Outline;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -12,7 +16,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.RectKt;
 
+import com.github.yukagram.ui.Yutils;
+
+import org.jetbrains.annotations.NotNull;
 import org.thunderdog.challegram.FillingDrawable;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.navigation.ViewController;
@@ -20,10 +28,9 @@ import org.thunderdog.challegram.support.ViewSupport;
 import org.thunderdog.challegram.theme.ColorId;
 import org.thunderdog.challegram.theme.Theme;
 import org.thunderdog.challegram.tool.Fonts;
+import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.Screen;
-import org.thunderdog.challegram.tool.Views;
 import org.thunderdog.challegram.widget.NoScrollTextView;
-import org.thunderdog.challegram.widget.ShadowView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +38,21 @@ import java.util.List;
 import me.vkryl.android.AnimatorUtils;
 import me.vkryl.android.animator.BoolAnimator;
 import me.vkryl.android.animator.FactorAnimator;
+import me.vkryl.android.animatorx.AnimatorListener;
+import me.vkryl.android.animatorx.FloatAnimator;
 import me.vkryl.android.widget.FrameLayoutFix;
+import me.vkryl.core.ColorUtils;
 
 /*
 * Pill-alike bottom bar for emoji keyboard
 */
 
-public class EmojiBottomBarView extends FrameLayoutFix {
+public class EmojiBottomBarView extends FrameLayoutFix implements FactorAnimator.Target, AnimatorListener<@NotNull Float> {
   private int currentSelectedIndex = -1;
   private List<Button> buttons;
   private LinearLayout linearLayout;
-  private ShadowView shadowView;
+  private BoolAnimator hidden;
+  public FloatAnimator animator;
 
   public EmojiBottomBarView(@NonNull Context context) {
     super(context);
@@ -50,7 +61,16 @@ public class EmojiBottomBarView extends FrameLayoutFix {
   public void init(ViewController<?> themeProvider, int currentSelectedIndex, boolean allowMedia, boolean hasGifs) {
     this.currentSelectedIndex = currentSelectedIndex;
 
-    linearLayout = new LinearLayout(getContext());
+    hidden = new BoolAnimator(0, this, AnimatorUtils.DECELERATE_INTERPOLATOR, 200L);
+    animator = new FloatAnimator(200L, AnimatorUtils.DECELERATE_INTERPOLATOR, currentSelectedIndex, this);
+
+    linearLayout = new LinearLayout(getContext()) {
+      @Override
+      protected void dispatchDraw(Canvas canvas) {
+        drawPill(canvas);
+        super.dispatchDraw(canvas);
+      }
+    };
 
     buttons = new ArrayList<>();
 
@@ -61,7 +81,7 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     );
 
     // what a schizo 🔥🔥🔥🙏🙏
-    int index = 0;
+    int i = 0;
     for (int[] ids : new int[][] {
       {R.id.btn_tabEmojis,   R.string.yu_TabEmojis,   0,                  Screen.dp(2f), },
       {R.id.btn_tabGifs,     R.string.yu_TabGifs,     0,                  0,                  },
@@ -69,7 +89,7 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     }) {
       Button title = new Button(getContext());
 
-      title.init(themeProvider, currentSelectedIndex == index++);
+      title.init(themeProvider, i++ == currentSelectedIndex);
 
       title.setId(ids[0]);
       title.setText(ids[1]);
@@ -83,7 +103,7 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     float linearLayoutCornerRadius = 15 + 5; // innerRadius + padding = outerRadius
 
     ViewSupport.setThemedBackground(linearLayout, ColorId.background, themeProvider)
-            .setCornerRadius(linearLayoutCornerRadius);
+      .setCornerRadius(linearLayoutCornerRadius);
 //    themeProvider.addThemeBackgroundColorListener(linearLayout, ColorId.headerBackground);
 
     linearLayout.setPadding(Screen.dp(5f), Screen.dp(5f), Screen.dp(5f), Screen.dp(5f));
@@ -93,7 +113,7 @@ public class EmojiBottomBarView extends FrameLayoutFix {
       ViewGroup.LayoutParams.WRAP_CONTENT,
       Gravity.CENTER_HORIZONTAL | Gravity.FILL_VERTICAL
     );
-    layoutParams.setMargins(0, 0, 0, Screen.dp(5));
+    layoutParams.setMargins(0, 0, 0, Screen.dp(7));
 
     linearLayout.setOutlineProvider(new ViewOutlineProvider() {
       @Override
@@ -116,20 +136,10 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     ));
 
     setAllowMedia(allowMedia);
-    setHasGifs(hasGifs);
   }
 
   public void setAllowMedia(boolean value) {
-    setVisibility(value ? View.VISIBLE : View.GONE);
-  }
-
-  boolean hasGifs = true;
-
-  public void setHasGifs(boolean value) {
-    if (hasGifs == value) return;
-    buttons.get(1).setVisibility(value ? View.VISIBLE : View.GONE);
-    hasGifs = value;
-
+    hidden.setValue(!value, true);
   }
 
   public void setSelectedIndex (int index) {
@@ -137,8 +147,7 @@ public class EmojiBottomBarView extends FrameLayoutFix {
       return;
     }
 
-    buttons.get(currentSelectedIndex).getAnimator().setValue(false, true);
-    buttons.get(index).getAnimator().setValue(true, true);
+    animator.setAnimatedValue((float) index);
 
     currentSelectedIndex = index;
   }
@@ -156,42 +165,75 @@ public class EmojiBottomBarView extends FrameLayoutFix {
     }
   }
 
-  public static class Button extends NoScrollTextView implements FactorAnimator.Target {
+  public void setHidden(boolean value) {
+    hidden.setValue(value, true);
+  }
+
+  RectF pillRect;
+
+  public void drawPill(Canvas canvas) {
+    if (pillRect == null) pillRect = getButtonRect(currentSelectedIndex);
+    Paint p = new Paint();
+    p.setColor(Theme.getColor(ColorId.filling));
+    canvas.drawRoundRect(pillRect, Screen.dp(15), Screen.dp(15), p);
+  }
+
+  public RectF getButtonRect(int index) {
+    Rect rect = new Rect();
+    buttons.get(index).getHitRect(rect);
+    return RectKt.toRectF(rect);
+  }
+
+  @Override
+  public void onFactorChanged(int id, float factor, float fraction, FactorAnimator callee) {
+    setTranslationY(factor * (getMeasuredHeight() + Screen.dp(10)));
+  }
+
+  @Override
+  public void onAnimationUpdate(@NotNull Float value) {
+    int floor = Math.clamp((int) Math.floor(value), 0, buttons.size() - 1);
+    int ceiling = Math.clamp((int) Math.ceil(value), 0, buttons.size() - 1);
+    float factor = Math.clamp(value - floor, 0, 1);
+
+    pillRect = Yutils.rectFLerp(getButtonRect(floor), getButtonRect(ceiling), factor);
+    linearLayout.postInvalidateOnAnimation();
+
+    for (int i = 0; i < buttons.size(); i++) {
+      Button b = buttons.get(i);
+
+      if (floor == i) {
+        b.update(1 - factor);
+      } else if (ceiling == i) {
+        b.update(factor);
+      } else {
+        b.update(0);
+      }
+    }
+  }
+
+  public static class Button extends NoScrollTextView {
     public Button(Context context) {
       super(context);
     }
-
-    private BoolAnimator animator;
-
-    private FillingDrawable background;
 
     public void init(ViewController<?> themeProvider, boolean selected) {
       setTypeface(Fonts.getRobotoMedium());
       setSingleLine();
       setGravity(Gravity.LEFT);
       setEllipsize(TextUtils.TruncateAt.END);
-      setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
+      setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f);
       setPadding(Screen.dp(10), Screen.dp(3), Screen.dp(10), Screen.dp(3));
 
-      setTextColor(Theme.getColor(ColorId.circleButtonOverlayIcon));
-      themeProvider.addOrUpdateThemeTextColorListener(this, ColorId.circleButtonOverlayIcon);
-
-      background = ViewSupport.setThemedBackground(this, ColorId.circleButtonOverlay, themeProvider);
-      background.setCornerRadius(15f);
-      if (!selected)
-        background.setAlphaFactor(0);
-
-      animator = new BoolAnimator(0, this, AnimatorUtils.DECELERATE_INTERPOLATOR, 200l, selected);
+      setTextColor(Theme.getColor(selected ? ColorId.fillingActiveContent : ColorId.background_text));
+      themeProvider.addOrUpdateThemeTextColorListener(this, selected ? ColorId.fillingActiveContent : ColorId.background_text);
     }
 
-    public BoolAnimator getAnimator() {
-      return animator;
-    }
-
-    @Override
-    public void onFactorChanged(int id, float factor, float fraction, FactorAnimator callee) {
-      background.setAlphaFactor(factor);
-      background.setCornerRadius(15f * factor);
+    public void update(float factor) {
+      setTextColor(ColorUtils.fromToArgb(
+        Theme.getColor(ColorId.background_text),
+        Theme.getColor(ColorId.fillingActiveContent),
+        factor
+      ));
     }
   }
 }

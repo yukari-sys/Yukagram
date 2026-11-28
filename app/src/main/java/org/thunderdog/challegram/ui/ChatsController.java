@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.yukagram.YuSettings;
+import com.github.yukagram.ui.main_controller.AbstractMainController;
 
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
@@ -182,14 +183,14 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
     super(context, tdlib);
   }
 
-  private MainController parentController;
+  private AbstractMainController<?> parentController;
 
-  public ChatsController setParent (MainController c) {
+  public ChatsController setParent (AbstractMainController<?> c) {
     this.parentController = c;
     return this;
   }
 
-  public MainController getParentController () {
+  public AbstractMainController<?> getParentController () {
     return parentController;
   }
 
@@ -288,7 +289,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
             int adapterPosition = parent.getChildAdapterPosition(view);
             if (adapterPosition != RecyclerView.NO_POSITION) {
               TGChat nextChat = context.adapter.getChatByItemPosition(adapterPosition + 1);
-              boolean needSplit = nextChat != null && (chat.isArchive() != nextChat.isArchive() || chat.isPinnedOrSpecial() != nextChat.isPinnedOrSpecial());
+              boolean needSplit = nextChat != null && (chat.isArchive() != nextChat.isArchive() || (!YuSettings.Toggle.NewDialogsView.is() && chat.isPinnedOrSpecial() != nextChat.isPinnedOrSpecial()));
               boolean needShadowTop = adapterPosition > 0 && context.adapter.getItemViewType(adapterPosition - 1) == ChatsAdapter.VIEW_TYPE_SUGGESTED_CHATS;
 
               if (needShadowTop) {
@@ -427,7 +428,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
       }
 
       TGChat next = context.adapter.getChatByItemPosition(position + 1);
-      if (next != null && (current.isArchive() != next.isArchive() || current.isPinnedOrSpecial() != next.isPinnedOrSpecial())) {
+      if (next != null && (current.isArchive() != next.isArchive() || (!YuSettings.Toggle.NewDialogsView.is() && current.isPinnedOrSpecial() != next.isPinnedOrSpecial()))) {
         outRect.bottom = Screen.dp(12f);
       } else {
         outRect.bottom = Screen.separatorSize();
@@ -1272,7 +1273,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
   }
 
   @Override
-  protected int getSelectMenuId () {
+  public int getSelectMenuId() {
     return R.id.menu_chatBulkActions;
   }
 
@@ -2248,6 +2249,10 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
           if (getSelectedChatCount() == 0) {
             tdlib.ui().showArchiveOptions(this, tdlib.chatList(ChatPosition.CHAT_LIST_ARCHIVE));
           }
+        } else if (YuSettings.Toggle.NewDialogsView.is() && canSelectChat(chat)) {
+          // New dialogs view: a long press on the row selects the chat, while the preview
+          // (and the options menu opened from its "More" button) is bound to the avatar.
+          selectUnselectChat(chat, true);
         } else {
           tdlib.ui().showChatOptions(this, chatList(), chat.getChatId(), null, new TdApi.MessageSourceChatList(), canSelectChat(chat), isChatSelected(chat), () -> selectUnselectChat(chat, true));
         }
@@ -2259,7 +2264,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
 
   private LongSparseArray<TdApi.Chat> selectedChats;
 
-  private int getSelectedChatCount () {
+  public int getSelectedChatCount() {
     return selectedChats != null ? selectedChats.size() : 0;
   }
 
@@ -2286,6 +2291,10 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
   }
 
   private void selectUnselectChat (TdApi.Chat chat, boolean updateHeader) {
+    boolean toInvalidate = false;
+    if (selectedChats == null || selectedChats.isEmpty()) {
+      toInvalidate = true;
+    }
     int index = selectedChats != null ? selectedChats.indexOfKey(chat.id) : -1;
     boolean isSelected = index >= 0;
     if (!tdlib.chatAvailable(chat) && !isSelected)
@@ -2316,6 +2325,9 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
     if (chatsView != null) {
       chatsView.updateChatSelectionState(chat.id, isSelected);
     }
+    if (selectedChats == null || selectedChats.isEmpty())
+      toInvalidate = true;
+    if (toInvalidate) chatsView.invalidateAll();
   }
 
   // other stuff
@@ -2487,7 +2499,7 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
       items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
       items.add(new ListItem(ListItem.TYPE_BUTTON, R.id.btn_editFolder, 0, R.string.EditFolder));
       items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
-    } else if (archiveList != null && archiveList.totalCount() > 0 && !YuSettings.Toggle.MoveArchiveToSidebar.is()) {
+    } else if (archiveList != null && archiveList.totalCount() > 0 && !(YuSettings.Toggle.MoveArchiveToSidebar.is() || YuSettings.Toggle.NewDialogsView.is())) {
       items.add(new ListItem(ListItem.TYPE_ICONIZED_EMPTY, R.id.changePhoneText, R.drawable.baseline_archive_96, Lang.getMarkdownString(this, R.string.OpenArchiveHint), false));
       items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
       items.add(new ListItem(ListItem.TYPE_BUTTON, R.id.btn_archive, 0, R.string.OpenArchive));
@@ -3159,6 +3171,10 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
   public boolean onInterceptLongPress (BaseView v, float x, float y) {
     if (!(v instanceof ChatView) || !((ChatView) v).canStartDrag(x, y))
       return false;
+    // New dialogs view: outside of select mode the avatar long-press opens the chat preview,
+    // so the reorder drag must not grab it. In select mode the drag keeps priority.
+    if (YuSettings.Toggle.NewDialogsView.is() && (getSelectedChatCount() == 0 || !((ChatView) v).isOnDragThingy(x, y)))
+      return false;
     TGChat chat = ((ChatView) v).getChat();
     if (chatsView != null && chat.isPinned() && adapter.canDragPinnedChats()) {
       RecyclerView.ViewHolder viewHolder = chatsView.getChildViewHolder(v);
@@ -3168,7 +3184,17 @@ public class ChatsController extends TelegramViewController<ChatsController.Argu
         touchHelper.startDrag(viewHolder);
         if (dragTooltip != null)
           dragTooltip.hide(true);
-        dragTooltip = context.tooltipManager().builder(v).controller(getParentOrSelf()).locate((targetView, outRect) -> ((ChatView) targetView).getAvatarReceiver().toRect(outRect)).show(tdlib, R.string.DragChatsHint);
+        if (YuSettings.Toggle.NewDialogsView.is())
+          dragTooltip = context.tooltipManager().builder(v).controller(getParentOrSelf())
+                  .locate((targetView, outRect) -> {
+                    ((ChatView) targetView).getAvatarReceiver().toRect(outRect);
+                    outRect.left = targetView.getMeasuredWidth() - outRect.right;
+                    outRect.right = targetView.getMeasuredWidth();
+                  })
+                  .show(tdlib, R.string.DragChatsHint);
+        else
+          dragTooltip = context.tooltipManager().builder(v).controller(getParentOrSelf()).locate((targetView, outRect) -> ((ChatView) targetView).getAvatarReceiver().toRect(outRect)).show(tdlib, R.string.DragChatsHint);
+
         return true;
       }
     }

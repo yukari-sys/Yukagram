@@ -289,7 +289,7 @@ public class DrawerController extends ViewController<Void> implements View.OnCli
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_calls, R.drawable.baseline_call_24, R.string.Calls));
     }
     items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_savedMessages, R.drawable.baseline_bookmark_24, R.string.SavedMessages));
-    if (YuSettings.Toggle.MoveArchiveToSidebar.is()) {
+    if (YuSettings.Toggle.MoveArchiveToSidebar.is() || YuSettings.Toggle.NewDialogsView.is()) {
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_archive, R.drawable.baseline_archive_24, R.string.ArchiveTitleList));
     }
     this.settingsClickBait = getSettingsClickBait();
@@ -317,14 +317,12 @@ public class DrawerController extends ViewController<Void> implements View.OnCli
       items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
       items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_featureToggles, R.drawable.outline_toggle_on_24, "Feature Toggles", false));
     }
-    if (Settings.instance().inDeveloperMode()) {
-      items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
-      items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_tdlib_clearLogs, R.drawable.baseline_bug_report_24, "Clear TDLib logs", false));
-      items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_tdlib_shareLogs, R.drawable.baseline_bug_report_24, "Send TDLib log", false));
-      /*if (BuildConfig.DEBUG) {
-        items.add(new SettingItem(SettingItem.TYPE_DRAWER_ITEM, R.id.btn_submitCrash, R.drawable.baseline_bug_report_24, "Crash app", false));
-      }*/
-    }
+//    if (Settings.instance().inDeveloperMode()) {
+//      items.add(new ListItem(ListItem.TYPE_SEPARATOR_FULL));
+//      items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_tdlib_clearLogs, R.drawable.baseline_bug_report_24, "Clear TDLib logs", false));
+//      items.add(new ListItem(ListItem.TYPE_DRAWER_ITEM, R.id.btn_tdlib_shareLogs, R.drawable.baseline_bug_report_24, "Send TDLib log", false));
+//      items.add(new SettingItem(SettingItem.TYPE_DRAWER_ITEM, R.id.btn_submitCrash, R.drawable.baseline_bug_report_24, "Crash app", false));
+//    }
 
     adapter = new SettingsAdapter(this) {
       @Override

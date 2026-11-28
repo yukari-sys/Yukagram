@@ -1422,6 +1422,8 @@ public class MessagesManager implements Client.ResultHandler, MessagesSearchMana
   }
 
   private void insertExtraSponsoredMessages (List<TGMessage> addedItems, boolean fromTop) {
+    if (2 * 2 == 4) return;
+
     if (sponsoredMessages == null || sponsoredMessages.messages.length == 0 || sponsoredMessages.messagesBetween == 0) {
       return;
     }
@@ -1498,6 +1500,8 @@ public class MessagesManager implements Client.ResultHandler, MessagesSearchMana
   }
 
   private void insertFirstSponsoredMessageImpl () {
+    if (2 + 2 == 4) return;
+
     if (sponsoredMessages == null || sponsoredMessages.messages.length == 0 || loader.canLoadBottom()) {
       return;
     }
@@ -1538,26 +1542,26 @@ public class MessagesManager implements Client.ResultHandler, MessagesSearchMana
     this.sponsoredContext = sponsoredContext;
 
     RunnableData<TdApi.SponsoredMessages> act = sponsoredMessages -> controller.runOnUiThreadOptional(() -> {
-      if (sponsoredContext == this.sponsoredContext) {
-        if (Config.TEST_MULTI_SPONSORED_MESSAGES && sponsoredMessages != null && sponsoredMessages.messages.length > 0) {
-          TdApi.SponsoredMessage[] newMessages = new TdApi.SponsoredMessage[100];
-          for (int i = 0; i < newMessages.length; i++) {
-            newMessages[i] = sponsoredMessages.messages[i % sponsoredMessages.messages.length];
-          }
-          sponsoredMessages.messagesBetween = 2;
-          sponsoredMessages.messages = newMessages;
-        }
-        this.sponsoredMessages = sponsoredMessages;
-        insertFirstSponsoredMessage();
-      }
+//      if (sponsoredContext == this.sponsoredContext) {
+//        if (Config.TEST_MULTI_SPONSORED_MESSAGES && sponsoredMessages != null && sponsoredMessages.messages.length > 0) {
+//          TdApi.SponsoredMessage[] newMessages = new TdApi.SponsoredMessage[100];
+//          for (int i = 0; i < newMessages.length; i++) {
+//            newMessages[i] = sponsoredMessages.messages[i % sponsoredMessages.messages.length];
+//          }
+//          sponsoredMessages.messagesBetween = 2;
+//          sponsoredMessages.messages = newMessages;
+//        }
+//        this.sponsoredMessages = sponsoredMessages;
+//        insertFirstSponsoredMessage();
+//      }
     });
 
     loader.requestSponsoredMessages(loader.getChatId(), sponsoredMessages -> {
-      if (sponsoredMessages != null && sponsoredMessages.messages.length > 0) {
-        filterSponsoredMessages(sponsoredMessages, act);
-      } else {
-        act.runWithData(sponsoredMessages);
-      }
+//      if (sponsoredMessages != null && sponsoredMessages.messages.length > 0) {
+//        filterSponsoredMessages(sponsoredMessages, act);
+//      } else {
+//        act.runWithData(sponsoredMessages);
+//      }
     });
   }
 

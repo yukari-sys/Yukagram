@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <item type="id" name="controller_yukagramSettings" />
+  <item type="id" name="controller_authkeyLogin" />
   <item type="id" name="btn_yukagramSettings" />
   <item type="id" name="btn_hideConnectionStatusBar" />
   <item type="id" name="btn_hideCameraButton" />
@@ -15,4 +16,9 @@
   <item type="id" name="btn_tabEmojis" />
   <item type="id" name="btn_tabStickers" />
   <item type="id" name="btn_tabGifs" />
+  <item type="id" name="btn_newDialogsView" />
+  <item type="id" name="btn_loginAuthKey" />
+  <item type="id" name="btn_loginAuthkeyDone" />
+  <item type="id" name="edit_dcId" />
+  <item type="id" name="edit_authkey" />
 </resources>

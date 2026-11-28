@@ -22,6 +22,8 @@ import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
 
+import com.github.yukagram.ui.main_controller.AbstractMainController;
+
 import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BaseActivity;
 import org.thunderdog.challegram.Log;
@@ -37,7 +39,6 @@ import org.thunderdog.challegram.telegram.TdlibDelegate;
 import org.thunderdog.challegram.tool.UI;
 import org.thunderdog.challegram.tool.Views;
 import org.thunderdog.challegram.ui.ChatsController;
-import org.thunderdog.challegram.ui.MainController;
 import org.thunderdog.challegram.ui.MessagesController;
 import org.thunderdog.challegram.unsorted.Settings;
 import org.thunderdog.challegram.util.StringList;
@@ -497,8 +498,20 @@ public class BaseView extends SparseDrawableView implements ClickHelper.Delegate
   private static final int FORCE_TOUCH_CHAT = 1;
   private static final int FORCE_TOUCH_CUSTOM = 2;
 
+  /**
+   * Whether a force touch (chat preview) may be triggered from this exact point.
+   * Returning false makes the long press fall back to {@link OnLongClickListener}.
+   * The default implementation preserves the original behavior for every view.
+   */
+  protected boolean canForceTouchAt (float x, float y) {
+    return true;
+  }
+
   private int needForceTouch (final float x, final float y) {
     if (!Config.FORCE_TOUCH_ENABLED) {
+      return FORCE_TOUCH_NONE;
+    }
+    if (!canForceTouchAt(x, y)) {
       return FORCE_TOUCH_NONE;
     }
     if (tdlib != null && chatId != 0 && Settings.instance().needPreviewChatOnHold()) {
@@ -612,7 +625,7 @@ public class BaseView extends SparseDrawableView implements ClickHelper.Delegate
         IntList ids = new IntList(5);
         IntList icons = new IntList(5);
         StringList strings = new StringList(5);
-        listener = ancestor.tdlib().ui().createSimpleChatActions(ancestor, getPreviewChatList(), getPreviewChatId(), ((MessagesController) controller).getMessageThread(), new TdApi.MessageSourceOther(), ids, icons, strings, ancestor instanceof MainController || ancestor instanceof ChatsController, false, false, null);
+        listener = ancestor.tdlib().ui().createSimpleChatActions(ancestor, getPreviewChatList(), getPreviewChatId(), ((MessagesController) controller).getMessageThread(), new TdApi.MessageSourceOther(), ids, icons, strings, ancestor instanceof AbstractMainController || ancestor instanceof ChatsController, false, false, null);
         for (int i = 0; i < ids.size(); i++) {
           actions.add(new ActionItem(ids.get(i), icons.get(i), strings.get()[i]));
         }
